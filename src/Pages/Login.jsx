@@ -5,27 +5,51 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import React from "react";
 import Box from "@mui/material/Box";
-
+import { useState } from "react";
 import { Routes } from "react-router"
+import { useNavigate } from "react-router-dom";
 import { Stack, TextField } from "@mui/material";
-
+import axios from "axios";
 
 export default function Login() {
+
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        axios.post("http://localhost:3001/login", {
+            email,
+            password
+        })
+            .then(result => {
+                console.log(result.data);
+                if (result.data === "Success") {
+                    navigate('/dashboard')
+                } else {
+                    navigate('/')
+                }
+            })
+            .catch(err => console.log(err))
+            console.log(email, password)
+    }
+// backgroundColor: "#d3d3d3"
     return (
         <>
             <Container>
                 <Stack direction="column" alignItems="center">
-                    <Paper elevation={2} sx={{ padding: 7, backgroundColor: "#d3d3d3" }} >
+                    <Paper elevation={4} sx={{ padding: 7 }} component="form" onSubmit={handleSubmit}>
                         <Typography variant="h3">Login</Typography>
                         {/* <Stack spacing={2}>  */}
-                        <TextField id="standard-basic" label="Email" variant="standard" fullWidth sx={{ marginTop: 4 }} />
+                        <TextField id="standard-basic1" name="email" label="Email" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setEmail(e.target.value)} />
 
-                        <TextField id="standard-basic" label="Password" variant="standard" fullWidth sx={{ marginTop: 4 }} />
+                        <TextField id="standard-basic2" name="password" label="Password" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
                         {/* </Stack> */}
-                        <Button variant="contained" fullWidth sx={{ marginTop: 6 }}>Login</Button>
+                        <Button variant="contained" type="submit" fullWidth sx={{ marginTop: 6 }}>Login</Button>
 
-                        <Box sx={{marginTop:4}}> 
-                            <Typography variant="h8" sx={{marginRight:1}}>Not a User?</Typography><Link href="/register" underline="none">Register</Link>
+                        <Box sx={{ marginTop: 4 }}>
+                            <Typography variant="h8" sx={{ marginRight: 1 }}>Not a User?</Typography><Link href="/register" underline="none">Register</Link>
                         </Box>
                     </Paper>
                 </Stack>
