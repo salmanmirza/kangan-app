@@ -24,8 +24,10 @@ export default function Login() {
             password
         })
             .then(result => {
-                console.log(result.data);
-                if (result.data === "Success") {
+                console.log(result);
+                if (result.data.message=== "Success") {
+                    localStorage.setItem("token", result.data.token)
+                    localStorage.setItem("user", JSON.stringify(result.data.user))
                     navigate('/dashboard')
                 } else {
                     navigate('/')

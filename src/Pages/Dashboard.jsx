@@ -15,6 +15,8 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import { BadgeOutlined, SchoolOutlined } from '@mui/icons-material';
 
+
+
 const drawerWidth = 240;
 
 export default function PermanentDrawerLeft() {
@@ -27,7 +29,7 @@ export default function PermanentDrawerLeft() {
           width: drawerWidth,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
+            width: drawerWidth, 
             boxSizing: 'border-box',
           },
         }}

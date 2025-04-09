@@ -24,7 +24,8 @@ export default function Register() {
             lname,
             email,
             password
-        }).then(result => console.log(result)).catch(err => console.log(err))
+        }).then(result => console.log(result))
+        .catch(err => console.log(err))
         console.log(fname, lname, email, password)      
     }   
     // backgroundColor: "#d3d3d3"

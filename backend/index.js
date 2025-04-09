@@ -7,6 +7,8 @@ import cors from 'cors';
 // const userModel = require('./models/user');
 import userModel from './models/user.js';
 import bycrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import verifyToken from './auth.js';
 
 const app = express();
 app.use(express.json());
@@ -16,23 +18,87 @@ app.use(cors());
 
 mongoose.connect("mongodb://127.0.0.1:27017/kangan");
 
-app.post("/login", async (req, res) => {
+app.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
-    const user = await userModel.findOne({email: email});
+    const user = await userModel.findOne({ email: email });
     const hashed = bycrypt.hash(user.password, 10);
-console.log(user);
+
+    const sercret = "k4ng4n123";
+    console.log(user);
     if (!user) {
         return res.json("User not found")
     }
     const isMatch = await bycrypt.compare(password, user.password);
-    
-    if (!isMatch) {
-        return res.json("Wrong password")
-    }
-    return res.json("Success")      
 
+    // if (!isMatch) {
+    //     return res.json("Wrong password")
+    // }
+    // return res.json("Success")      
+    if (isMatch) {
+        const token = jwt.sign({ email: user.email }, sercret, { expiresIn: '1h' });
+        console.log(token);
+        if (!token) {
+            return res.json("No token provided --access denied");
+        } else {
+            return res.json({
+
+               'token':  token,
+                'message': "Success",
+                'user': user
+                
+
+            });
+        }
+    } else {
+        res.json('Wrong Password');
+    }
+})
+
+app.get('/dashboard', verifyToken, (req, res) => {
+    if (req.data === 'Success') {
+        const token = req.headers.authorization;
+        console.log(token);
+        res.json("token is matched and verified")
+        console.log("token is matched and verified")
+
+    }
 
 })
+
+
+
+// function verifyToken(req, res, next) {
+
+//     const token = req.headers.authorization;
+//     if (!token) {
+//         return res.json("No token provided --access denied");
+//     } try {
+//         const decoded = jwt.verify(token, sercret);
+//         req.user = decoded;
+//         console.log(decoded);
+//         next()
+//         return res.json("Success")
+//     } catch (error) {
+//         res.json("invalid token entered");
+//     }
+// };
+
+// export default function verifyToken(req, res, next) {
+
+//     const token = req.headers.authorization;
+//     if (!token) {
+//         return res.json("No token provided --access denied");
+//     } try {
+//         const decoded = jwt.verify(token, sercret);
+//         req.user = decoded;
+//         console.log(decoded);
+//         next()
+//         return res.json("Success")
+//     } catch (error) {
+//         res.json("invalid token entered");
+//     }
+// };
+
 
 
 app.post('/register', async (req, res) => {
