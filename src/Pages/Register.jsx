@@ -19,14 +19,14 @@ export default function Register() {
    
     const handleSubmit = async (e) => {
         e.preventDefault()
-        axios.post("http://localhost:3001/register", {
+        axios.post("http://localhost:3001/auth/register", {
             fname,
             lname,
             email,
             password
         }).then(result => console.log(result))
         .catch(err => console.log(err))
-        console.log(fname, lname, email, password)      
+        console.log(fname, lname, email, password);    
     }   
     // backgroundColor: "#d3d3d3"
 

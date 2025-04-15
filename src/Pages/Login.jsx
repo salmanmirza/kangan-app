@@ -19,22 +19,27 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        axios.post("http://localhost:3001/login", {
+        axios.post("http://localhost:3001/auth/login", {
             email,
             password
         })
             .then(result => {
                 console.log(result);
-                if (result.data.message=== "Success") {
+                const role = result.data.user.role.enum;
+                console.log(role);
+                console.log(result.data.user);
+                if (result.data.message=== "Success" && result.data.user.role.enum[0] === "admin") {
                     localStorage.setItem("token", result.data.token)
                     localStorage.setItem("user", JSON.stringify(result.data.user))
-                    navigate('/dashboard')
+                    localStorage.setItem("role", JSON.stringify(result.data.user.role.enum[0]))
+                    console.log(result.data.user);
+                    console.log(result.data);
+                    navigate('/dashboard',result.data);
                 } else {
-                    navigate('/')
+                    navigate('/');
                 }
             })
             .catch(err => console.log(err))
-            console.log(email, password)
     }
 // backgroundColor: "#d3d3d3"
     return (
