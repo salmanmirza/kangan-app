@@ -146,7 +146,7 @@ export default function PermanentDrawerLeft() {
     setOpen(true);
   };
 
-  const handleEditAndUpdate = () => {
+  const handleEditAndUpdate = (fetchedData) => {
     setFormData();
     setIsEditMode(true);
     setOpen(true);
@@ -165,7 +165,9 @@ export default function PermanentDrawerLeft() {
       console.log("Update this user in database:", formData);
       // updateUser(formData.id, formData)
     } else {
-      console.log("Add this user to database:", formData);
+      axios.post("http://localhost:3001/users/addNewUserByAdmin", formData)
+        .then(result => console.log(result))
+        .catch(err => console.log(err));
       // addUser(formData)
     }
     handleClose();
@@ -349,15 +351,15 @@ export default function PermanentDrawerLeft() {
             <TableBody>
               {fetchedUsers.map((row) => (
                 <TableRow
-                  key={row.fname}
+                  key={row.firstName}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell component="th" scope="row">
-                    {row.fname}
+                    {row.firstName}
                   </TableCell>
-                  <TableCell>{row.lname}</TableCell>
+                  <TableCell>{row.lastName}</TableCell>
                   <TableCell>{row.email}</TableCell>
-                  <TableCell>{row?.role.enum[0]}</TableCell>
+                  <TableCell>{row?.role}</TableCell>
                   <TableCell align='center'>{row.createdAt}</TableCell>
                   <TableCell> <Button variant="contained" color="info" id={row._id} onClick={() => handleEditAndUpdate()}>Edit</Button> | <Button variant="contained" color="error" id={row._id} onClick={handleDelete}>Delete</Button></TableCell>
                 </TableRow>

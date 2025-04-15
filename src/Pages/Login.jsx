@@ -24,16 +24,11 @@ export default function Login() {
             password
         })
             .then(result => {
-                console.log(result);
-                const role = result.data.user.role.enum;
-                console.log(role);
-                console.log(result.data.user);
-                if (result.data.message=== "Success" && result.data.user.role.enum[0] === "admin") {
+                if (result.data.message=== "Success", result.data.user.role==="admin") {
                     localStorage.setItem("token", result.data.token)
                     localStorage.setItem("user", JSON.stringify(result.data.user))
-                    localStorage.setItem("role", JSON.stringify(result.data.user.role.enum[0]))
-                    console.log(result.data.user);
-                    console.log(result.data);
+                    localStorage.setItem("role", JSON.stringify(result.data.user.role))
+                    
                     navigate('/dashboard',result.data);
                 } else {
                     navigate('/');

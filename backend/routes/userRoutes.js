@@ -1,9 +1,12 @@
 import express from 'express';
+import bcrypt from 'bcrypt';
 const router = express.Router();
 import verifyToken from '../middlewares/authMiddleware.js';
 import authorizedRoles from '../middlewares/roleMiddleware.js';
 import { Navigate } from 'react-router-dom';
 import user from '../models/userModel.js';
+
+const sercret = "k4ng4n123";
 //only admin can access this route ------admin routes
 router.get('/admin', verifyToken, authorizedRoles("{admin}"), async (req, res) => {
 
@@ -40,6 +43,35 @@ router.delete('/deleteById', async (req, res) => {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 });
+
+router.post('/addNewUserByAdmin', async (req, res) => {
+
+    try {
+        const {firstName, lastName, email, password, classToTeach, subjectToTeach } = req.body;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new user({
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            classToTeach,
+            subjectToTeach,
+            role: 'teacher',
+        });
+        const userToSave = await newUser.save();
+        res.status(201).json(userToSave);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to add user' });
+    }
+
+});
+
+
+
+
+
 
 // only teacher can access this route ------teacher routes
 router.get('/teacher', verifyToken, authorizedRoles("admin", "teacher"), (req, res) => {

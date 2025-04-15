@@ -3,21 +3,23 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
 
-    fname: {
+    firstName: {
         type: String,
-        required: true,
-    }, lname: {
+        required: true
+    }, lastName: {
         type: String,
-        required: true,
+        required: true
     }, email: {
         type: String,
-        required: true,
+        required: true
     }, password: {
         type: String,
-        required: true,
+        required: true
     },
     role: {
-        enum: ["admin", "teacher", "student"], //user == student in our case for now/
+        type: String,
+        enum: ['teacher', 'admin', 'student'],
+    }, //user == student in our case for now/   
     // }, rollNo: {
     //     type: String,
     //     default: undefined
@@ -31,8 +33,7 @@ const userSchema = new mongoose.Schema({
     // }, studentSubject: {
     //     type: String,
     //     default: undefined
-
-    }, teachSubject: {
+ teachSubject: {
         type: String,
         default: undefined
     }, teachClass: {
