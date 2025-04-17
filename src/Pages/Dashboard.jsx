@@ -24,6 +24,15 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import { Table, TableContainer, TableHead, TableBody, TableRow, TableCell, Paper } from '@mui/material';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import PeopleIcon from '@mui/icons-material/People';
+import PropTypes from 'prop-types';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+
 
 const btnstyle = {
   position: 'absolute',
@@ -43,95 +52,97 @@ const style = {
   boxShadow: 4,
   p: 4,
 };
+
 ///style for modal--end
 
 const drawerWidth = 240;
-const tableData = [{
-  "id": 1,
-  "first_name": "Rollo",
-  "last_name": "Worcester",
-  "email": "rworcester0@geocities.jp",
-  "gender": "Male",
-  "ip_address": "241.216.250.95"
-}, {
-  "id": 2,
-  "first_name": "Latrena",
-  "last_name": "Patriskson",
-  "email": "lpatriskson1@digg.com",
-  "gender": "Female",
-  "ip_address": "65.112.169.52"
-}, {
-  "id": 3,
-  "first_name": "Ailsun",
-  "last_name": "Fison",
-  "email": "afison2@google.de",
-  "gender": "Female",
-  "ip_address": "7.192.72.80"
-}, {
-  "id": 4,
-  "first_name": "Terrye",
-  "last_name": "Allen",
-  "email": "tallen3@dropbox.com",
-  "gender": "Female",
-  "ip_address": "214.172.54.153"
-}, {
-  "id": 5,
-  "first_name": "Wells",
-  "last_name": "Adkins",
-  "email": "wadkins4@go.com",
-  "gender": "Male",
-  "ip_address": "222.229.51.195"
-}, {
-  "id": 6,
-  "first_name": "Leland",
-  "last_name": "Curuclis",
-  "email": "lcuruclis5@theguardian.com",
-  "gender": "Female",
-  "ip_address": "141.86.119.67"
-}, {
-  "id": 7,
-  "first_name": "Curr",
-  "last_name": "Perico",
-  "email": "cperico6@ibm.com",
-  "gender": "Male",
-  "ip_address": "54.98.136.165"
-}, {
-  "id": 8,
-  "first_name": "Katya",
-  "last_name": "Bilovus",
-  "email": "kbilovus7@shareasale.com",
-  "gender": "Female",
-  "ip_address": "72.231.133.48"
-}, {
-  "id": 9,
-  "first_name": "Paul",
-  "last_name": "Hatcher",
-  "email": "phatcher8@squarespace.com",
-  "gender": "Genderfluid",
-  "ip_address": "215.83.58.106"
-}, {
-  "id": 10,
-  "first_name": "Cathi",
-  "last_name": "Washington",
-  "email": "cwashington9@npr.org",
-  "gender": "Female",
-  "ip_address": "20.83.28.139"
-}]
-
 
 export default function PermanentDrawerLeft() {
   // for open modal in create use case -- start
   // const [open, setOpen] = React.useState(false);
   const [open, setOpen] = useState(false);      ///for default opening to add new record
   const [isEditMode, setIsEditMode] = useState(false);
+  const [role, setRole] = useState('');
+  const [value, setValue] = useState(0);
+
+  const [fetchedUsers, setFectchedUsers] = useState([]);
+  //axios call to get all the record from db on pageLoad
+  useEffect(() => {
+
+    getUsers();
+  }, []);
+
+  const getUsers = async (res, req) => {
+    const user = localStorage.getItem("user")
+    const abc = JSON.parse(user)
+    const response = await axios.get("http://localhost:3001/users/admin", {
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8',
+        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+    });
+    setFectchedUsers(response.data)
+  }
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  // Filter the users based on role
+  const teachers = fetchedUsers.filter(user => user.role === 'teacher');
+  const students = fetchedUsers.filter(user => user.role === 'student');
+
+  // Custom TabPanel component
+  function CustomTabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      </div>
+    );
+  }
+
+  CustomTabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+  };
+
+  // a11yProps helper function
+  function a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
+
+
+
   const [formData, setFormData] = useState({
+    _id: '',
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    classToTeach: '',
-    subjectToTeach: '',
+    teachSubject: '',
+    teachClass: '',
+    studentRollNo: '',
+    studentGuardian: '',
+    role: '',
+
   });
+
+  const handleRoleChange = (event) => {
+    setRole(event.target.value);
+  };
 
   const handleAddNewUser = () => {
     setFormData({
@@ -139,15 +150,30 @@ export default function PermanentDrawerLeft() {
       lastName: '',
       email: '',
       password: '',
-      classToTeach: '',
-      subjectToTeach: '',
+      teachSubject: '',
+      teachClass: '',
+      studentRollNo: '',
+      studentGuardian: '',
+      role: '',
     });
     setIsEditMode(false);
     setOpen(true);
   };
 
-  const handleEditAndUpdate = (fetchedData) => {
-    setFormData();
+  const handleEditAndUpdate = async (row) => {
+
+    setFormData({
+      _id: row._id,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      email: row.email,
+      teachClass: row.teachClass || '',
+      teachSubject: row.teachSubject || '',
+      studentRollNo: row.studentRollNo || '',
+      studentGuardian: row.studentGuardian || '',
+      rollNo: row.rollNo || '',
+      role: row.role || ''
+    });
     setIsEditMode(true);
     setOpen(true);
   };
@@ -157,13 +183,20 @@ export default function PermanentDrawerLeft() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setValue(newValue);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isEditMode) {
-      console.log("Update this user in database:", formData);
-      // updateUser(formData.id, formData)
+      const response = await axios.put("http://localhost:3001/users/updateUserByIdByAdmin", formData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      }
+      );
+      window.location.reload();
     } else {
       axios.post("http://localhost:3001/users/addNewUserByAdmin", formData)
         .then(result => console.log(result))
@@ -171,47 +204,16 @@ export default function PermanentDrawerLeft() {
       // addUser(formData)
     }
     handleClose();
+    // window.location.reload();
   };
   // for open modal in Edit to update use case -- end
   //--------//   
 
 
-  const [fetchedUsers, setFectchedUsers] = useState([]); // state to store the data from the API
-  //axios call to get all the record from db 
-
-  useEffect(() => {
-
-    getUsers();
-  }, []);
-
-  const getUsers = async (res, req) => {
-    const user = localStorage.getItem("user")
-    const abc = JSON.parse(user)
-
-    console.log(abc.role)
-    const response = await axios.get("http://localhost:3001/users/admin", {
-      params: {
-        'role': abc.role,
-      },
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8',
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-        // },
-      },
-      // body: {
-      //   abc,
-
-      // }
-    });
-    setFectchedUsers(response.data)
-  }
-
   ////delete functino call for delete record from Admin crud...start
 
   const handleDelete = async (e) => {
-    // this.setState({val:event.currentTarget.value})
-    // e.preventDefault()
+
     const ID = e.currentTarget.id;
     if (window.confirm("Do you want to delete the Record?")) {
       await axios.delete("http://localhost:3001/users/deleteById", {
@@ -219,11 +221,12 @@ export default function PermanentDrawerLeft() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-    } else {
 
+        },
+
+      });
     }
+    window.location.reload();
 
   }
 
@@ -238,47 +241,65 @@ export default function PermanentDrawerLeft() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style} component={"form"} onSubmit={handleSubmit}>
-          {/* <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
-              Add User</Typography> */}
           <Typography variant="h6" mb={2}>
             {isEditMode ? 'Edit User' : 'Add User'}
           </Typography>
+
           <Stack spacing={4}>
-            <Stack direction='row' spacing={2}
-            >
+            <Stack direction="row" spacing={2}>
               <TextField name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} />
               <TextField name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} />
               <TextField name="email" label="Email" value={formData.email} onChange={handleChange} />
             </Stack>
-            <Stack direction='row' spacing={2} >
+
+            <Stack direction="row" spacing={2}>
+              <FormControl sx={{ width: '52ch' }}>
+                <InputLabel id="role-select-label">Role</InputLabel>
+                <Select
+                  labelId="role-select-label"
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  label="Role"
+                  onChange={handleChange}
+                >
+                  <MenuItem value={'teacher'}>Teacher</MenuItem>
+                  <MenuItem value={'student'}>Student</MenuItem>
+                </Select>
+              </FormControl>
+
               <TextField name="password" label="Password" value={formData.password} onChange={handleChange} />
-              <TextField name="classToTeach" label="Class to Teach" value={formData.classToTeach} onChange={handleChange} />
-              <TextField name="subjectToTeach" label="Subject to Teach" value={formData.subjectToTeach} onChange={handleChange} />
             </Stack>
-            <Stack direction={'row'} spacing={2} >
+
+            {/* while role teacher is selected in form */}
+            {formData.role === 'teacher' && (
+              <Stack direction="row" spacing={2}>
+                <TextField name="teachClass" label="Class to Teach" value={formData.teachClass} onChange={handleChange} />
+                <TextField name="teachSubject" label="Subject to Teach" value={formData.teachSubject} onChange={handleChange} />
+              </Stack>
+            )}
+
+            {/* when the role is student selected in dropdown */}
+            {formData.role === 'student' && (
+              <>
+                <Stack direction="row" spacing={2}>
+                  <TextField name="studentRollNo" label="Roll No" value={formData.studentRollNo || ''} onChange={handleChange} />
+                  <TextField name="studentGuardian" label="Guardian" value={formData.studentGuardian || ''} onChange={handleChange} />
+                </Stack>
+              </>
+            )}
+
+            <Stack direction="row" spacing={2}>
               <Button variant="contained" type="submit">
                 {isEditMode ? 'Update' : 'Add'}
               </Button>
-
-              {/* <Paper elevation={4} sx={{ padding: 7 }} component="form">  
-          
-              <Typography variant="h3">Add User</Typography>
-        
-              <TextField id="standard-basic1" name="email" label="Email" variant="standard"  sx={{ marginTop: 4 }} onChange={(e) => setEmail(e.target.value)} />
-              <TextField id="standard-basic2" name="password" label="Password" variant="standard"  sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
-                <br></br>
-              <TextField id="standard-basic1" name="email" label="Email" variant="standard"  sx={{ marginTop: 4 }} onChange={(e) => setEmail(e.target.value)} />
-              <TextField id="standard-basic2" name="password" label="Password" variant="standard"  sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
-            
-              <Button variant="contained" type="submit" fullWidth sx={{ marginTop: 6 }}>Login</Button>
-            </Paper> */}
             </Stack>
           </Stack>
         </Box>
       </Modal>
       <Drawer
         sx={{
-          width: drawerWidth,
+          width: '150px',
           flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: drawerWidth,
@@ -303,11 +324,11 @@ export default function PermanentDrawerLeft() {
         <Divider />
 
         <List>
-          {['Students', 'Courses', 'Notifications', 'Account'].map((text, index) => (
+          {['Dashboard', 'Courses', 'Users', 'Assignments'].map((text, index) => (
             <ListItem key={text} disablePadding>
               <ListItemButton>
                 <ListItemIcon>
-                  {index % 2 === 0 ? <SchoolOutlined /> : <BadgeOutlined />}
+                  {index % 2 === 0 ? <PeopleIcon /> : <BadgeOutlined />}
                 </ListItemIcon>
                 <ListItemText primary={text} />
               </ListItemButton>
@@ -328,46 +349,84 @@ export default function PermanentDrawerLeft() {
           ))}
         </List> */}
       </Drawer>
-      <Box
-        component="Container"
-        sx={{ bgcolor: 'background.default', p: 3 }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 3 }}>
-
-          <Button onClick={handleAddNewUser} variant="contained">Add User</Button>
-        </Box>
-        <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1000 }}>
-          <Table aria-label='simple table'>
-            <TableHead>
-              <TableRow>
-                <TableCell>First Name</TableCell>
-                <TableCell>Last name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell align='center'>Role</TableCell>
-                <TableCell align='center'>Record Date</TableCell>
-                <TableCell align='center'>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {fetchedUsers.map((row) => (
-                <TableRow
-                  key={row.firstName}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.firstName}
-                  </TableCell>
-                  <TableCell>{row.lastName}</TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>{row?.role}</TableCell>
-                  <TableCell align='center'>{row.createdAt}</TableCell>
-                  <TableCell> <Button variant="contained" color="info" id={row._id} onClick={() => handleEditAndUpdate()}>Edit</Button> | <Button variant="contained" color="error" id={row._id} onClick={handleDelete}>Delete</Button></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <Box component="Container" sx={{ bgcolor: 'background.default' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 3 }}>
+        <Button onClick={handleAddNewUser} variant="contained">Add User</Button>
       </Box>
+
+      <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1100 }}>
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleTabChange} aria-label="user role tabs">
+              <Tab label="Teachers" {...a11yProps(0)} />
+              <Tab label="Students" {...a11yProps(1)} />
+            </Tabs>
+          </Box>
+          
+          <CustomTabPanel value={value} index={0}>
+            <Table aria-label="teacher">
+              <TableHead>
+                <TableRow>
+                  <TableCell>First Name</TableCell>
+                  <TableCell>Last Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell align="center">Role</TableCell>
+                  <TableCell align="center">Subject To Teach</TableCell>
+                  <TableCell align="center">Teach Class</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {teachers.map((row) => (
+                  <TableRow key={row._id}>
+                    <TableCell component="th" scope="row">{row.firstName}</TableCell>
+                    <TableCell align="center">{row.lastName}</TableCell>
+                    <TableCell align="center">{row.email}</TableCell>
+                    <TableCell align="center">{row.role}</TableCell>
+                    <TableCell align="center">{row.teachSubject}</TableCell>
+                    <TableCell align="center">{row.teachClass}</TableCell>
+                    <TableCell align="center">
+                      <Button variant="contained" color="info" onClick={() => handleEditAndUpdate(row)}>Edit</Button> | 
+                      <Button variant="contained" color="error" onClick={() => handleDelete(row._id)}>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CustomTabPanel>
+
+          <CustomTabPanel value={value} index={1}>
+            <Table aria-label="student">
+              <TableHead>
+                <TableRow>
+                  <TableCell>First Name</TableCell>
+                  <TableCell>Last Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell align="center">Role</TableCell>
+                  <TableCell align="center">St. RollNo.</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {students.map((row) => (
+                  <TableRow key={row._id}>
+                    <TableCell component="th" scope="row">{row.firstName}</TableCell>
+                    <TableCell align="center">{row.lastName}</TableCell>
+                    <TableCell align="center">{row.email}</TableCell>
+                    <TableCell align="center">{row.role}</TableCell>
+                    <TableCell align="center">{row.studentRollNo}</TableCell>
+                    <TableCell align="center">
+                      <Button variant="contained" color="info" onClick={() => handleEditAndUpdate(row)}>Edit</Button> | 
+                      <Button variant="contained" color="error" onClick={() => handleDelete(row._id)}>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CustomTabPanel>
+        </Box>
+      </TableContainer>
+    </Box>
     </Box>
   );
 }

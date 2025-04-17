@@ -20,20 +20,21 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['teacher', 'admin', 'student'],
     }, //user == student in our case for now/   
-    // }, rollNo: {
-    //     type: String,
-    //     default: undefined
-    // }, studentClass: {
-    //     type: String,
-    //     default: undefined
-
+    studentRollNo: {
+        type: String,
+        default: undefined
+    }, studentGuardian: {
+        type: String,
+        default: undefined
+    },
     // }, studentSection: {/////will be used in case of student
     //     type: String,
     //     default: undefined///commented for now while working on teache
     // }, studentSubject: {
     //     type: String,
     //     default: undefined
- teachSubject: {
+    // },
+     teachSubject: {
         type: String,
         default: undefined
     }, teachClass: {

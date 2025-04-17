@@ -23,11 +23,10 @@ router.get('/admin', verifyToken, authorizedRoles("{admin}"), async (req, res) =
     return Navigate('/register');
 });
 router.delete('/deleteById', async (req, res) => {
-    console.log(" DELETE /deleteById hit");
 
     const { _id } = req.body;
     if (!_id) {
-        return res.status(400).json({ message: "User ID (_id) is required" });
+        return res.status(400).json({ message: "User ID  is required" });
     }
 
     try {
@@ -44,30 +43,77 @@ router.delete('/deleteById', async (req, res) => {
     }
 });
 
-router.post('/addNewUserByAdmin', async (req, res) => {
+
+//updateById after editing on view
+router.put('/updateUserByIdByAdmin', async (req, res) => {
+
+    // const { _id } = req.body;
+    // console.log(req.body)
+    // console.log(_id);
+    const {_id, firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
+    if (!_id) {
+        return res.status(400).json({ message: "User ID  is required" });
+    }
 
     try {
-        const {firstName, lastName, email, password, classToTeach, subjectToTeach } = req.body;
 
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        const updateData = {
+            _id,
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            teachClass,
+            teachSubject,
+            role,
+            studentRollNo,
+            studentGuardian,
+            updatedAt: Date.now(),
+        };
+        const updatedUser = await user.findOneAndUpdate(
+            { _id },
+            updateData,
+            // { new: true }
+        );
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({ message: "User Updated successfully" });
+    } catch (error) {
+        console.error("Error updating record:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+
+router.post('/addNewUserByAdmin', async (req, res) => {
+    try {
+        const { firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const newUser = new user({
             firstName,
             lastName,
             email,
             password: hashedPassword,
-            classToTeach,
-            subjectToTeach,
-            role: 'teacher',
+            teachClass,
+            teachSubject,
+            role,
+            studentRollNo,
+            studentGuardian,
         });
+
         const userToSave = await newUser.save();
         res.status(201).json(userToSave);
     } catch (err) {
-        console.error(err);
+        console.error('Error adding new user:', err);
         res.status(500).json({ error: 'Failed to add user' });
     }
-
 });
-
 
 
 
