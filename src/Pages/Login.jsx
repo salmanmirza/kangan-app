@@ -24,7 +24,7 @@ export default function Login() {
             password
         })
             .then(result => {
-                if (result.data.message=== "Success", result.data.user.role==="admin") {
+                if (result.data.message=== "Success") {
                     localStorage.setItem("token", result.data.token)
                     localStorage.setItem("user", JSON.stringify(result.data.user))
                     localStorage.setItem("role", JSON.stringify(result.data.user.role))

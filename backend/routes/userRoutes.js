@@ -50,7 +50,7 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
     // const { _id } = req.body;
     // console.log(req.body)
     // console.log(_id);
-    const {_id, firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
+    const { _id, firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
     if (!_id) {
         return res.status(400).json({ message: "User ID  is required" });
     }
@@ -85,6 +85,67 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
     } catch (error) {
         console.error("Error updating record:", error);
         return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+//update userProfile by id
+router.get('/getUserToUpdateById', async (req, res) => {
+    const { userId } = req.query;
+
+    console.log("UserID from query:", userId);
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    try {
+        const _user = await user.findById(userId);
+
+        if (!_user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({
+            _id: _user._id,
+            firstName: _user.firstName,
+            lastName: _user.lastName,
+            email: _user.email
+        });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+////update after edit record
+router.put('/editUpdateUserById', async (req, res) => {
+    const { userId } = req.query;
+    const { firstName, lastName, email, password } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    try {
+        const updateData = {
+            firstName,
+            lastName,
+            email,
+            updatedAt: Date.now(),
+        };
+        if (password && password.trim() !== '') {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateData.password = hashedPassword;
+        }
+
+        const updatedUser = await user.findByIdAndUpdate(userId, updateData, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ message: 'User updated successfully' });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
