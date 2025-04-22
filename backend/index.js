@@ -1,6 +1,7 @@
 // const express = require("express");
 import express from 'express';
 import mongoose from 'mongoose';
+import path from 'path';
 // const mongoose = require("mongoose");
 // const cors = require("cors");
 import cors from 'cors';
@@ -9,6 +10,7 @@ import bycrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import authRoutes from './routes/authRoutes.js'; 
 import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
 import user from './models/userModel.js';   
 
 const app = express();
@@ -18,9 +20,11 @@ app.use(cors());
 
 
 mongoose.connect("mongodb://127.0.0.1:27017/kangan");
-
+// app.use('uploads', express.static(path.join('uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes); 
+app.use("/courses", courseRoutes);
 // app.use("/auth", require("./routes/authRoutes.js"));
 
 
