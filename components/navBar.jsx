@@ -31,7 +31,6 @@ export default function NavBar() {
 
     const handleOpenModal = async () => {
         try {
-            window.alert(userId);
             const res = await axios.get(`http://localhost:3001/users/getUserToUpdateById?userId=${userId}`);
             setFormData({
                 _id: res.data._id,
@@ -41,6 +40,7 @@ export default function NavBar() {
                 password: '' // Don't pre-fill for security, unless hashed or secured
             });
             setOpenModal(true);
+
         } catch (err) {
             console.error('Error fetching user data', err);
         }
@@ -54,13 +54,21 @@ export default function NavBar() {
         e.preventDefault();
         try {
             await axios.put(`http://localhost:3001/users/editUpdateUserById?userId=${userId}`, formData);
-            alert("Profile updated!");
+
+            // Update localStorage with the new user info
+            localStorage.setItem('user', JSON.stringify({
+                _id: formData._id,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email
+            }));
+
             setOpenModal(false);
+            window.location.reload(); // Optional: refresh to reflect changes
         } catch (err) {
             console.error('Update failed', err);
         }
     };
-
     const modalStyle = {
         position: 'absolute',
         top: '50%',
