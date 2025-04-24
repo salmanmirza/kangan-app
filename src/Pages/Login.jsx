@@ -46,7 +46,7 @@ export default function Login() {
                         {/* <Stack spacing={2}>  */}
                         <TextField id="standard-basic1" name="email" label="Email" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setEmail(e.target.value)} />
 
-                        <TextField id="standard-basic2" name="password" label="Password" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
+                        <TextField id="standard-basic2" name="password" type="password" label="Password" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
                         {/* </Stack> */}
                         <Button variant="contained" type="submit" fullWidth sx={{ marginTop: 6 }}>Login</Button>
 
