@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Button, Modal, Typography, Stack, TextField,
-    TableContainer, Paper
+    TableContainer, Paper, Select, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 
 const VisuallyHiddenInput = styled('input')({
@@ -39,19 +39,21 @@ const style = {
 };
 
 export default function Courses() {
-
     const [open, setOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [courses, setCourses] = useState([]);
-    const [userFormData, setuserFormData] = useState({
+    const [teachers, setTeachers] = useState([]); // State for teachers
+    const [userFormData, setUserFormData] = useState({
         _id: '',
         courseName: '',
         description: '',
         imgPath: null,
+        teacherId: '', // Add teacherId to the form data
     });
 
     useEffect(() => {
         getCourses();
+        getTeachers(); // Fetch teachers
     }, []);
 
     const getCourses = async () => {
@@ -63,24 +65,35 @@ export default function Courses() {
         }
     };
 
+    const getTeachers = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/users/getAllTeachers"); // Adjust this API endpoint
+            setTeachers(response.data);
+        } catch (err) {
+            console.error("Error fetching teachers:", err);
+        }
+    };
+
     const handleClose = () => setOpen(false);
 
     const handleAddNewCourse = () => {
-        setuserFormData({
+        setUserFormData({
             courseName: '',
             description: '',
             imgPath: null,
+            teacherId: '', // Reset teacher selection
         });
         setIsEditMode(false);
         setOpen(true);
     };
 
     const handleEditAndUpdate = (row) => {
-        setuserFormData({
+        setUserFormData({
             _id: row._id,
             courseName: row.courseName,
             description: row.description,
             imgPath: row.imgPath,
+            teacherId: row.teacher ? row.teacher._id : '', // Add teacherId when editing
         });
         setIsEditMode(true);
         setOpen(true);
@@ -88,11 +101,11 @@ export default function Courses() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setuserFormData((prev) => ({ ...prev, [name]: value }));
+        setUserFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleFileChange = (e) => {
-        setuserFormData((prev) => ({ ...prev, imgPath: e.target.files[0] }));
+        setUserFormData((prev) => ({ ...prev, imgPath: e.target.files[0] }));
     };
 
     const handleSubmit = async (e) => {
@@ -101,13 +114,13 @@ export default function Courses() {
         formData.append('courseName', userFormData.courseName);
         formData.append('description', userFormData.description);
         formData.append('_id', userFormData._id); // Send the course ID to update
+        formData.append('teacher', userFormData.teacherId); // Append teacher ID
         if (userFormData.imgPath) {
             formData.append('imgPath', userFormData.imgPath);
         }
 
         if (isEditMode) {
-            console.log(formData);
-            axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
+            await axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem("token")}`,
                     'Content-Type': 'multipart/form-data',
@@ -179,8 +192,8 @@ export default function Courses() {
                                     startIcon={<CloudUploadIcon />}
                                 >
                                     {userFormData.imgPath && typeof userFormData.imgPath !== 'string'
-                                        ? 'Change Image'
-                                        : 'Upload Image'}
+                                        ? 'Change Doc'
+                                        : 'Upload Doc'}
                                     <VisuallyHiddenInput type="file" onChange={handleFileChange} />
                                 </Button>
 
@@ -207,6 +220,23 @@ export default function Courses() {
                                     </Box>
                                 )}
                             </Stack>
+
+                            {/* Teacher dropdown */}
+                            <FormControl fullWidth>
+                                <InputLabel>Teacher</InputLabel>
+                                <Select
+                                    label="Teacher"
+                                    name="teacherId"
+                                    value={userFormData.teacherId}
+                                    onChange={handleChange}
+                                >
+                                    {teachers.map((teacher) => (
+                                        <MenuItem key={teacher._id} value={teacher._id}>
+                                            {teacher.firstName} {/* Adjust according to your teacher data structure */}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
                             <Button variant="contained" type="submit">
                                 {isEditMode ? 'Update Course' : 'Add Course'}

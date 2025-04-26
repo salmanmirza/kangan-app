@@ -176,6 +176,32 @@ router.post('/addNewUserByAdmin', async (req, res) => {
     }
 });
 
+//get all users with role teacher on course addition
+router.get('/getAllTeachers', async (req, res) => {
+    try {
+        const teachers = await user.find({ role: 'teacher' });
+
+        if (!teachers || teachers.length === 0) {
+            return res.status(404).json({ message: 'No teachers found' });
+        }
+
+        // Optionally filter the response fields
+        const formattedTeachers = teachers.map(teacher => ({
+            _id: teacher._id,
+            firstName: teacher.firstName,
+            lastName: teacher.lastName,
+            email: teacher.email,
+            teachClass: teacher.teachClass,
+            teachSubject: teacher.teachSubject
+        }));
+
+        res.json(formattedTeachers);
+    } catch (error) {
+        console.error("Error fetching teachers:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 
 
 

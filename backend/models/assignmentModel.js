@@ -1,28 +1,17 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const assignmentSchema = new mongoose.Schema({
-  assignmentNo: {
-    type: Number,
-    required: true
-  },
-  assignmentFile: {
-    type: String,  ////to store path in database and file to folder
-    required: true
-  },
-  dueDate: {
-    type: Date,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: undefined
-  }
-});
+const assignmentSchema = new mongoose.Schema(
+    {
+        title: { type: String, required: true }, // Title of the assignment
+        description: { type: String, required: true }, // Description of the assignment
+        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true }, // Link to Course
+        teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to Teacher (creator)
+        dueDate: { type: Date, required: true }, // Due date for the assignment
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date },
+    }
+);
 
 const Assignment = mongoose.model('Assignment', assignmentSchema);
 
-module.exports = Assignment;
+export default Assignment;

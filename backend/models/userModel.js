@@ -1,54 +1,21 @@
 import mongoose from 'mongoose';
 
-
-const userSchema = new mongoose.Schema({
-
-    firstName: {
-        type: String,
-        required: true
-    }, lastName: {
-        type: String,
-        required: true
-    }, email: {
-        type: String,
-        required: true
-    }, password: {
-        type: String,
-        required: true
-    },
-    role: {
-        type: String,
-        enum: ['teacher', 'admin', 'student'],
-    }, //user == student in our case for now/   
-    studentRollNo: {
-        type: String,
-        default: undefined
-    }, studentGuardian: {
-        type: String,
-        default: undefined
-    },
-    // }, studentSection: {/////will be used in case of student
-    //     type: String,
-    //     default: undefined///commented for now while working on teache
-    // }, studentSubject: {
-    //     type: String,
-    //     default: undefined
-    // },
-     teachSubject: {
-        type: String,
-        default: undefined
-    }, teachClass: {
-        type: String,
-        default: undefined
-    }, createdAt: {
-        type: Date,
-        default: Date.now
-    }, updatedAt: {       ////// will be used in case of record/data iupdate 
-        type: Date,
-        default: undefined
+const userSchema = new mongoose.Schema(
+    {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true },
+        role: { type: String, enum: ['admin', 'teacher', 'student'], required: true },
+        teachClass: { type: String }, // Only applicable for teachers
+        teachSubject: { type: String }, // Only applicable for teachers
+        studentRollNo: { type: String }, // Only applicable for students
+        studentGuardian: { type: String }, // Only applicable for students
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date }
     }
+);
 
-});
+const User = mongoose.model('User', userSchema);
 
-const user = mongoose.model('user', userSchema);
-export default user;
+export default User;

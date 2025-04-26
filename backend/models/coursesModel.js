@@ -1,25 +1,16 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const courseSchema = new mongoose.Schema({
-  courseName: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String
-  },
-  imgPath: {
-    type: String ////img path to this field in database and actual img to selected folder in app.
+const courseSchema = new mongoose.Schema(
+    {
+        courseName: { type: String, required: true },
+        description: { type: String, required: true },
+        imgPath: { type: String }, // Optional image path
+        teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to Teacher
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date }
+    }
+);
 
-  }, createdAt: {
-    type: Date,
-    default: Date.now
+const Course = mongoose.model('Course', courseSchema);
 
-  }, updatedAt: {       ////// will be used in case of record/data iupdate 
-    type: Date,
-    default: undefined
-
-  }
-});
-
-module.exports = mongoose.model('Course', courseSchema);
+export default Course;
