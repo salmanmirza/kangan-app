@@ -50,7 +50,7 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
     // const { _id } = req.body;
     // console.log(req.body)
     // console.log(_id);
-    const { _id, firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
+    const { _id, firstName, lastName, email, password, department, qualification, role, studentRollNo, studentGuardian } = req.body;
     if (!_id) {
         return res.status(400).json({ message: "User ID  is required" });
     }
@@ -65,8 +65,8 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
             lastName,
             email,
             password: hashedPassword,
-            teachClass,
-            teachSubject,
+            department,
+            qualification,
             role,
             studentRollNo,
             studentGuardian,
@@ -152,7 +152,7 @@ router.put('/editUpdateUserById', async (req, res) => {
 
 router.post('/addNewUserByAdmin', async (req, res) => {
     try {
-        const { firstName, lastName, email, password, teachClass, teachSubject, role, studentRollNo, studentGuardian } = req.body;
+        const { firstName, lastName, email, password, department, qualification, role, studentRollNo, studentGuardian } = req.body;
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -161,8 +161,8 @@ router.post('/addNewUserByAdmin', async (req, res) => {
             lastName,
             email,
             password: hashedPassword,
-            teachClass,
-            teachSubject,
+            department,
+            qualification,
             role,
             studentRollNo,
             studentGuardian,
@@ -191,14 +191,23 @@ router.get('/getAllTeachers', async (req, res) => {
             firstName: teacher.firstName,
             lastName: teacher.lastName,
             email: teacher.email,
-            teachClass: teacher.teachClass,
-            teachSubject: teacher.teachSubject
+            department: teacher.department,
+            qualification: teacher.qualification
         }));
 
         res.json(formattedTeachers);
     } catch (error) {
         console.error("Error fetching teachers:", error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+//getAllUserWithRoleStd
+router.get('/getAllUserWithRoleStd', async (req, res) => {
+    try {
+        const students = await user.find({ role: 'student' });
+        res.status(200).json(students);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch students', error: err });
     }
 });
 

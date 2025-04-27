@@ -13,6 +13,7 @@ import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import user from './models/userModel.js';   
 import assignmentRoutes from './routes/assignmentRoutes.js';
+import enrollmentsRoutes from "./routes/enrollmentRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -28,7 +29,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes); 
 app.use("/courses", courseRoutes);
 app.use("/assignments", assignmentRoutes);
-
+app.use("/enrollments", enrollmentsRoutes);
 // app.use("/auth", require("./routes/authRoutes.js"));
 
 

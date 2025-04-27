@@ -87,7 +87,11 @@ export default function Courses() {
         setOpen(true);
     };
 
-    const handleEditAndUpdate = (row) => {
+    const handleEditAndUpdate = async (row) => {
+        if (teachers.length === 0) {
+            await getTeachers(); // make sure teacher list is loaded
+        }
+
         setUserFormData({
             _id: row._id,
             courseName: row.courseName,

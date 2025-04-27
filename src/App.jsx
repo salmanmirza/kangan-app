@@ -7,6 +7,7 @@ import "./App.css";
 import Courses from "./Pages/courses";
 import Users from "./Pages/users";
 import Assignments from "./Pages/assignments";
+import Enrollments from "./Pages/enrollments"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="courses" element={<Courses />} />
             <Route path="users" element={<Users />} />
             <Route path="assignments" element={<Assignments />} />
+            <Route path="enrollments" element={<Enrollments />} />
           </Route>
         </Routes>
       </BrowserRouter>

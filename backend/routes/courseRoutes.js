@@ -140,4 +140,15 @@ router.put('/updateCourseByIdByAdmin', upload.single('imgPath'), async (req, res
     }
 });
 
+//http://localhost:3001/courses/all
+router.get('/all', async (req, res) => {
+    try {
+        const courses = await course.find();
+        res.status(200).json(courses);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to fetch courses', error: err });
+    }
+});
+
+
 export default router;

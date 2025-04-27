@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    Box, Button, Modal, Typography, Stack, TextField,
+    Box, Button, Modal, Typography, Stack, TextField, Select, MenuItem, InputLabel, FormControl,
     TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody,
 } from '@mui/material';
 
@@ -17,36 +17,80 @@ const style = {
     p: 4,
 };
 
-export default function AssignmentPage() {
+export default function Assignments() {
     const [open, setOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [assignments, setAssignments] = useState([]);
+    const [courses, setCourses] = useState([]);
+    const [teachers, setTeachers] = useState([]); // State for teachers
     const [formData, setFormData] = useState({
         _id: '',
+        title: '',
+        description: '',
+        course: '',
+        teacher: '',
         assignmentNo: '',
         assignmentFile: '',
         dueDate: ''
     });
 
+    // Fetch assignments, courses, and teachers when component mounts
     useEffect(() => {
         fetchAssignments();
+        getCourses();
+        getTeachers(); // Fetch teachers
     }, []);
 
+    // Fetch courses from the backend
+    const getCourses = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/courses/getAllCourses");
+            setCourses(response.data);
+        } catch (err) {
+            console.error("Error fetching courses:", err);
+        }
+    };
+
+    // Fetch teachers from the backend
+    const getTeachers = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/users/getAllTeachers");
+            setTeachers(response.data);
+        } catch (err) {
+            console.error("Error fetching teachers:", err);
+        }
+    };
+
+    // Fetch all assignments
     const fetchAssignments = async () => {
         const response = await axios.get('http://localhost:3001/assignments/getAllAssignments');
         setAssignments(response.data);
     };
 
+    // Open modal for adding a new assignment
     const handleOpen = () => {
-        setFormData({ assignmentNo: '', assignmentFile: '', dueDate: '' });
+        setFormData({
+            title: '',
+            description: '',
+            course: '',
+            teacher: '',
+            assignmentNo: '',
+            assignmentFile: '',
+            dueDate: ''
+        });
         setIsEditMode(false);
         setOpen(true);
     };
 
+    // Open modal for editing an existing assignment
     const handleEdit = (assignment) => {
         const formattedDate = new Date(assignment.dueDate).toISOString().split('T')[0];
         setFormData({
             _id: assignment._id,
+            title: assignment.title,
+            description: assignment.description,
+            course: assignment.course._id, // Assuming `course` is populated and contains _id
+            teacher: assignment.teacher._id, // Assuming `teacher` is populated and contains _id
             assignmentNo: assignment.assignmentNo,
             assignmentFile: assignment.assignmentFile,
             dueDate: formattedDate
@@ -55,8 +99,10 @@ export default function AssignmentPage() {
         setOpen(true);
     };
 
+    // Close the modal
     const handleClose = () => setOpen(false);
 
+    // Handle form field change
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         setFormData(prev => ({
@@ -65,12 +111,17 @@ export default function AssignmentPage() {
         }));
     };
 
+    // Submit form to add or update an assignment
     const handleSubmit = async (e) => {
         e.preventDefault();
         const form = new FormData();
+        form.append('title', formData.title);
+        form.append('description', formData.description);
+        form.append('course', formData.course);
+        form.append('teacher', formData.teacher);
         form.append('assignmentNo', formData.assignmentNo);
-        form.append('assignmentFile', formData.assignmentFile);
         form.append('dueDate', formData.dueDate);
+        form.append('assignmentFile', formData.assignmentFile);
         form.append('id', formData._id); // Include the ID in the form data if editing
 
         try {
@@ -87,11 +138,11 @@ export default function AssignmentPage() {
         }
     };
 
+    // Delete an assignment
     const handleDelete = async (id) => {
         if (window.confirm('Do you want to delete this assignment?')) {
             const data = { id };
-            const url = 'http://localhost:3001/assignments/deleteAssignmentById';
-            await axios.delete(url, { data });
+            await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', { data });
             fetchAssignments();
         }
     };
@@ -102,6 +153,22 @@ export default function AssignmentPage() {
                 <Box sx={style} component="form" onSubmit={handleSubmit}>
                     <Typography variant="h6">{isEditMode ? 'Edit Assignment' : 'Add Assignment'}</Typography>
                     <Stack spacing={2} mt={2}>
+                        <TextField
+                            name="title"
+                            label="Title"
+                            type="text"
+                            value={formData.title}
+                            onChange={handleChange}
+                            fullWidth
+                        />
+                        <TextField
+                            name="description"
+                            label="Description"
+                            type="text"
+                            value={formData.description}
+                            onChange={handleChange}
+                            fullWidth
+                        />
                         <TextField
                             name="assignmentNo"
                             label="Assignment No"
@@ -119,6 +186,40 @@ export default function AssignmentPage() {
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                         />
+                        {/* Course Dropdown */}
+                        <FormControl fullWidth>
+                            <InputLabel>Course</InputLabel>
+                            <Select
+                                name="course"
+                                value={formData.course || ''}
+                                onChange={handleChange}
+                                label="Course"
+                            >
+                                <MenuItem value="">Select a Course</MenuItem>
+                                {courses.map((course) => (
+                                    <MenuItem key={course._id} value={course._id}>
+                                        {course.courseName}  {/* Display course name */}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        {/* Teacher Dropdown */}
+                        <FormControl fullWidth>
+                            <InputLabel>Teacher</InputLabel>
+                            <Select
+                                name="teacher"
+                                value={formData.teacher || ''}
+                                onChange={handleChange}
+                                label="Teacher"
+                            >
+                                <MenuItem value="">Select a Teacher</MenuItem>
+                                {teachers.map((teacher) => (
+                                    <MenuItem key={teacher._id} value={teacher._id}>
+                                        {teacher.firstName} {teacher.lastName}  {/* Concatenate first and last names */}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                         <Button variant="outlined" component="label">
                             Attach File
                             <input hidden type="file" name="assignmentFile" onChange={handleChange} />
@@ -134,11 +235,15 @@ export default function AssignmentPage() {
                 <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
             </Box>
 
-            <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1100 }}>
+            <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1200 }}>
                 <Table>
                     <TableHead>
                         <TableRow>
+                            <TableCell>Title</TableCell>
+                            <TableCell>Description</TableCell>
                             <TableCell>Assignment No</TableCell>
+                            <TableCell>Course</TableCell>
+                            <TableCell>Teacher</TableCell>
                             <TableCell>Due Date</TableCell>
                             <TableCell>File</TableCell>
                             <TableCell>Actions</TableCell>
@@ -147,7 +252,11 @@ export default function AssignmentPage() {
                     <TableBody>
                         {assignments.map((assignment) => (
                             <TableRow key={assignment._id}>
+                                <TableCell>{assignment.title}</TableCell>
+                                <TableCell>{assignment.description}</TableCell>
                                 <TableCell>{assignment.assignmentNo}</TableCell>
+                                <TableCell>{assignment.course?.courseName || 'N/A'}</TableCell>
+                                <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
                                 <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                                 <TableCell>
                                     <a href={`http://localhost:3001/uploads/${assignment.assignmentFile}`} target="_blank" rel="noopener noreferrer">
@@ -165,4 +274,4 @@ export default function AssignmentPage() {
             </TableContainer>
         </Box>
     );
-};
+}

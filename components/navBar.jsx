@@ -23,6 +23,7 @@ export default function NavBar() {
     });
 
     const user = JSON.parse(localStorage.getItem('user'));
+    const role = JSON.parse(localStorage.getItem('role')); // Get role from localStorage
     const userName = user?.firstName || 'User';
     const userId = user?._id;
 
@@ -37,10 +38,9 @@ export default function NavBar() {
                 firstName: res.data.firstName || '',
                 lastName: res.data.lastName || '',
                 email: res.data.email || '',
-                password: '' // Don't pre-fill for security, unless hashed or secured
+                password: '' // Don't pre-fill password for security
             });
             setOpenModal(true);
-
         } catch (err) {
             console.error('Error fetching user data', err);
         }
@@ -55,7 +55,7 @@ export default function NavBar() {
         try {
             await axios.put(`http://localhost:3001/users/editUpdateUserById?userId=${userId}`, formData);
 
-            // Update localStorage with the new user info
+            // Update localStorage with new user info
             localStorage.setItem('user', JSON.stringify({
                 _id: formData._id,
                 firstName: formData.firstName,
@@ -64,11 +64,12 @@ export default function NavBar() {
             }));
 
             setOpenModal(false);
-            window.location.reload(); // Optional: refresh to reflect changes
+            window.location.reload();
         } catch (err) {
             console.error('Update failed', err);
         }
     };
+
     const modalStyle = {
         position: 'absolute',
         top: '50%',
@@ -110,37 +111,53 @@ export default function NavBar() {
             </AppBar>
 
             <Drawer
-                sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } }}
+                sx={{ width: "140px", flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } }}
                 variant="permanent"
                 anchor="left"
             >
                 <Toolbar />
                 <Divider />
                 <List>
+                    {/* Always visible */}
                     <ListItem>
                         <ListItemButton component={NavLink} to="/dashboard">
                             <ListItemIcon><PeopleIcon /></ListItemIcon>
                             <ListItemText primary="Dashboard" />
                         </ListItemButton>
                     </ListItem>
+
                     <ListItem>
                         <ListItemButton component={NavLink} to="/dashboard/courses">
                             <ListItemIcon><PeopleIcon /></ListItemIcon>
                             <ListItemText primary="Courses" />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem>
-                        <ListItemButton component={NavLink} to="/dashboard/users">
-                            <ListItemIcon><PeopleIcon /></ListItemIcon>
-                            <ListItemText primary="Users" />
-                        </ListItemButton>
-                    </ListItem>
+
                     <ListItem>
                         <ListItemButton component={NavLink} to="/dashboard/assignments">
                             <ListItemIcon><PeopleIcon /></ListItemIcon>
                             <ListItemText primary="Assignments" />
                         </ListItemButton>
                     </ListItem>
+
+                    {/* Only Admin can see Users and Enrollments */}
+                    {role === 'admin' && (
+                        <>
+                            <ListItem>
+                                <ListItemButton component={NavLink} to="/dashboard/users">
+                                    <ListItemIcon><PeopleIcon /></ListItemIcon>
+                                    <ListItemText primary="Users" />
+                                </ListItemButton>
+                            </ListItem>
+
+                            <ListItem>
+                                <ListItemButton component={NavLink} to="/dashboard/enrollments">
+                                    <ListItemIcon><PeopleIcon /></ListItemIcon>
+                                    <ListItemText primary="Enrollments" />
+                                </ListItemButton>
+                            </ListItem>
+                        </>
+                    )}
                 </List>
             </Drawer>
 

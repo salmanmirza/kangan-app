@@ -2,7 +2,10 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs-extra';
 import path from 'path';
-import assignment from '../models/assignmentModel.js';
+import Assignment from '../models/assignmentModel.js'; // Ensure that the model is imported
+import Course from '../models/coursesModel.js';  // Assuming you have a `Course` model
+import User from '../models/userModel.js';  // Assuming you have a `User` model (teacher)
+
 const router = express.Router();
 
 // File upload setup with multer
@@ -19,11 +22,15 @@ const upload = multer({ storage: storage });
 // Create a new assignment
 router.post('/addAssignmentByTeacher', upload.single('assignmentFile'), async (req, res) => {
     try {
-        const { assignmentNo, dueDate } = req.body;
+        const { title, description, assignmentNo, course, teacher, dueDate } = req.body;
         const assignmentFile = req.file ? req.file.filename : null;
 
-        const newAssignment = new assignment({
+        const newAssignment = new Assignment({
+            title,
+            description,
             assignmentNo,
+            course,
+            teacher,
             dueDate,
             assignmentFile,
         });
@@ -31,16 +38,21 @@ router.post('/addAssignmentByTeacher', upload.single('assignmentFile'), async (r
         await newAssignment.save();
         res.status(201).json(newAssignment);
     } catch (error) {
+        console.error('Error creating assignment:', error.message);
         res.status(500).json({ message: 'Error creating assignment', error: error.message });
     }
 });
 
-// Get all assignments
+// Get all assignments (populate course and teacher)
 router.get('/getAllAssignments', async (req, res) => {
     try {
-        const assignments = await assignment.find();
+        const assignments = await Assignment.find()
+            .populate('course')  // Populate the course field with its details
+            .populate('teacher'); // Populate the teacher field with its details
+
         res.status(200).json(assignments);
     } catch (error) {
+        console.error('Error fetching assignments:', error.message);
         res.status(500).json({ message: 'Error fetching assignments', error: error.message });
     }
 });
@@ -49,7 +61,7 @@ router.get('/getAllAssignments', async (req, res) => {
 router.delete('/deleteAssignmentById', async (req, res) => {
     try {
         const { id } = req.body;  // ID from request body
-        const deletedAssignment = await assignment.findByIdAndDelete(id);
+        const deletedAssignment = await Assignment.findByIdAndDelete(id);
 
         if (!deletedAssignment) {
             return res.status(404).json({ message: 'Assignment not found' });
@@ -70,6 +82,7 @@ router.delete('/deleteAssignmentById', async (req, res) => {
 
         res.status(200).json({ message: 'Assignment and attachment deleted successfully' });
     } catch (error) {
+        console.error('Error deleting assignment:', error.message);
         res.status(500).json({ message: 'Error deleting assignment', error: error.message });
     }
 });
@@ -77,10 +90,10 @@ router.delete('/deleteAssignmentById', async (req, res) => {
 // Update an existing assignment by ID
 router.put('/updateAssignmentById', upload.single('assignmentFile'), async (req, res) => {
     try {
-        const { id, assignmentNo, dueDate } = req.body; // Get the assignment details and ID from the request body
+        const { id, title, description, assignmentNo, course, teacher, dueDate } = req.body; // Get the assignment details and ID from the request body
 
         // Find the existing assignment by ID
-        const existingAssignment = await assignment.findById(id);
+        const existingAssignment = await Assignment.findById(id);
 
         if (!existingAssignment) {
             return res.status(404).json({ message: 'Assignment not found' });
@@ -88,7 +101,11 @@ router.put('/updateAssignmentById', upload.single('assignmentFile'), async (req,
 
         // Create the update object
         const updatedFields = {
+            title,
+            description,
             assignmentNo,
+            course,
+            teacher,
             dueDate,
         };
 
@@ -105,9 +122,10 @@ router.put('/updateAssignmentById', upload.single('assignmentFile'), async (req,
         }
 
         // Perform the update
-        const updatedAssignment = await assignment.findByIdAndUpdate(id, { $set: updatedFields }, { new: true });
+        const updatedAssignment = await Assignment.findByIdAndUpdate(id, { $set: updatedFields }, { new: true })
+            .populate('course') // Populate course details after update
+            .populate('teacher'); // Populate teacher details after update
 
-        // Send back the updated assignment
         res.status(200).json(updatedAssignment);
     } catch (error) {
         console.error('Error updating assignment:', error.message);

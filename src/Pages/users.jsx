@@ -31,8 +31,8 @@ const Users = () => {
         lastName: '',
         email: '',
         password: '',
-        teachSubject: '',
-        teachClass: '',
+        department: '',
+        qualification: '',
         studentRollNo: '',
         studentGuardian: '',
         role: '',
@@ -61,8 +61,8 @@ const Users = () => {
             lastName: '',
             email: '',
             password: '',
-            teachSubject: '',
-            teachClass: '',
+            department: '',
+            qualification: '',
             studentRollNo: '',
             studentGuardian: '',
             role: '',
@@ -77,8 +77,8 @@ const Users = () => {
             firstName: row.firstName,
             lastName: row.lastName,
             email: row.email,
-            teachClass: row.teachClass || '',
-            teachSubject: row.teachSubject || '',
+            department: row.department || '',
+            qualification: row.qualification || '',
             studentRollNo: row.studentRollNo || '',
             studentGuardian: row.studentGuardian || '',
             role: row.role || ''
@@ -169,8 +169,8 @@ const Users = () => {
                         </Stack>
                         {formData.role === 'teacher' && (
                             <Stack direction="row" spacing={2}>
-                                <TextField name="teachClass" label="Class to Teach" value={formData.teachClass} onChange={handleChange} />
-                                <TextField name="teachSubject" label="Subject to Teach" value={formData.teachSubject} onChange={handleChange} />
+                                <TextField name="department" label="department" value={formData.department} onChange={handleChange} />
+                                <TextField name="qualification" label="qualification" value={formData.qualification} onChange={handleChange} />
                             </Stack>
                         )}
                         {formData.role === 'student' && (
@@ -206,8 +206,8 @@ const Users = () => {
                                 <TableCell>Last Name</TableCell>
                                 <TableCell>Email</TableCell>
                                 <TableCell>Role</TableCell>
-                                <TableCell>Subject</TableCell>
-                                <TableCell>Class</TableCell>
+                                <TableCell>Department</TableCell>
+                                <TableCell>Qualification</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -218,8 +218,8 @@ const Users = () => {
                                     <TableCell>{row.lastName}</TableCell>
                                     <TableCell>{row.email}</TableCell>
                                     <TableCell>{row.role}</TableCell>
-                                    <TableCell>{row.teachSubject}</TableCell>
-                                    <TableCell>{row.teachClass}</TableCell>
+                                    <TableCell>{row.department}</TableCell>
+                                    <TableCell>{row.qualification}</TableCell>
                                     <TableCell>
                                         <Button variant="contained" color="info" onClick={() => handleEditAndUpdate(row)}>Edit</Button> |
                                         <Button variant="contained" color="error" onClick={() => handleDelete(row._id)}>Delete</Button>
