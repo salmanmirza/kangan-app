@@ -49,10 +49,6 @@ export default function Login() {
                         <TextField id="standard-basic2" name="password" type="password" label="Password" variant="standard" fullWidth sx={{ marginTop: 4 }} onChange={(e) => setPassword(e.target.value)} />
                         {/* </Stack> */}
                         <Button variant="contained" type="submit" fullWidth sx={{ marginTop: 6 }}>Login</Button>
-
-                        <Box sx={{ marginTop: 4 }}>
-                            <Typography variant="h8" sx={{ marginRight: 1 }}>Not a User?</Typography><Link href="/register" underline="none">Register</Link>
-                        </Box>
                     </Paper>
                 </Stack>
             </Container>

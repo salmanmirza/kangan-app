@@ -150,12 +150,12 @@ export default function NavBar() {
                                 </ListItemButton>
                             </ListItem>
 
-                            <ListItem>
+                            {/* <ListItem>
                                 <ListItemButton component={NavLink} to="/dashboard/enrollments">
                                     <ListItemIcon><PeopleIcon /></ListItemIcon>
                                     <ListItemText primary="Enrollments" />
                                 </ListItemButton>
-                            </ListItem>
+                            </ListItem> */}
                         </>
                     )}
                 </List>

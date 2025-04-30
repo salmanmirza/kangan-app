@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'; 
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import NavBar from '../../components/navBar';
@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Box, Button, Modal, Typography, Stack, TextField,
-    TableContainer, Paper, Select, MenuItem, InputLabel, FormControl
+    TableContainer, Paper
 } from '@mui/material';
 
 const VisuallyHiddenInput = styled('input')({
@@ -42,18 +42,15 @@ export default function Courses() {
     const [open, setOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [courses, setCourses] = useState([]);
-    const [teachers, setTeachers] = useState([]); // State for teachers
     const [userFormData, setUserFormData] = useState({
         _id: '',
         courseName: '',
         description: '',
         imgPath: null,
-        teacherId: '', // Add teacherId to the form data
     });
 
     useEffect(() => {
         getCourses();
-        getTeachers(); // Fetch teachers
     }, []);
 
     const getCourses = async () => {
@@ -65,15 +62,6 @@ export default function Courses() {
         }
     };
 
-    const getTeachers = async () => {
-        try {
-            const response = await axios.get("http://localhost:3001/users/getAllTeachers"); // Adjust this API endpoint
-            setTeachers(response.data);
-        } catch (err) {
-            console.error("Error fetching teachers:", err);
-        }
-    };
-
     const handleClose = () => setOpen(false);
 
     const handleAddNewCourse = () => {
@@ -81,23 +69,17 @@ export default function Courses() {
             courseName: '',
             description: '',
             imgPath: null,
-            teacherId: '', // Reset teacher selection
         });
         setIsEditMode(false);
         setOpen(true);
     };
 
     const handleEditAndUpdate = async (row) => {
-        if (teachers.length === 0) {
-            await getTeachers(); // make sure teacher list is loaded
-        }
-
         setUserFormData({
             _id: row._id,
             courseName: row.courseName,
             description: row.description,
             imgPath: row.imgPath,
-            teacherId: row.teacher ? row.teacher._id : '', // Add teacherId when editing
         });
         setIsEditMode(true);
         setOpen(true);
@@ -118,7 +100,6 @@ export default function Courses() {
         formData.append('courseName', userFormData.courseName);
         formData.append('description', userFormData.description);
         formData.append('_id', userFormData._id); // Send the course ID to update
-        formData.append('teacher', userFormData.teacherId); // Append teacher ID
         if (userFormData.imgPath) {
             formData.append('imgPath', userFormData.imgPath);
         }
@@ -213,34 +194,15 @@ export default function Courses() {
                                         }}
                                     >
                                         <img
-                                            src={
-                                                typeof userFormData.imgPath === 'string'
-                                                    ? `http://localhost:3001${userFormData.imgPath}`
-                                                    : URL.createObjectURL(userFormData.imgPath)
-                                            }
+                                            src={typeof userFormData.imgPath === 'string'
+                                                ? `http://localhost:3001${userFormData.imgPath}`
+                                                : URL.createObjectURL(userFormData.imgPath)}
                                             alt="Course Preview"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
                                     </Box>
                                 )}
                             </Stack>
-
-                            {/* Teacher dropdown */}
-                            <FormControl fullWidth>
-                                <InputLabel>Teacher</InputLabel>
-                                <Select
-                                    label="Teacher"
-                                    name="teacherId"
-                                    value={userFormData.teacherId}
-                                    onChange={handleChange}
-                                >
-                                    {teachers.map((teacher) => (
-                                        <MenuItem key={teacher._id} value={teacher._id}>
-                                            {teacher.firstName} {/* Adjust according to your teacher data structure */}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
 
                             <Button variant="contained" type="submit">
                                 {isEditMode ? 'Update Course' : 'Add Course'}

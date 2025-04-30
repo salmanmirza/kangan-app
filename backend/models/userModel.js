@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         role: { type: String, enum: ['admin', 'teacher', 'student'], required: true },
-        department: { type: String }, // Only applicable for teachers
-        qualification: { type: String }, // Only applicable for teachers
+        courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }], // Array for students
+        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },  // Single reference for teachers
         studentRollNo: { type: String }, // Only applicable for students
         studentGuardian: { type: String }, // Only applicable for students
         createdAt: { type: Date, default: Date.now },

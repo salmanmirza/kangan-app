@@ -22,16 +22,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Serve static files from the 'uploads' folder
-
 // Route to handle adding a new course
 router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) => {
     try {
-        const { courseName, description, teacher } = req.body; // 👈 teacher included
+        const { courseName, description } = req.body; // Removed teacher reference
         const createdAt = new Date();
 
-        if (!courseName || !description || !teacher) { // 👈 validate teacher
-            return res.status(400).json({ error: 'Course name, description, and teacher are required' });
+        if (!courseName || !description) {
+            return res.status(400).json({ error: 'Course name and description are required' });
         }
 
         const imgPath = req.file ? `/uploads/${req.file.filename}` : null;
@@ -40,8 +38,7 @@ router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) =
             courseName,
             description,
             imgPath,
-            createdAt,
-            teacher // 👈 assign teacher
+            createdAt
         });
 
         const courseToSave = await newCourse.save();
@@ -64,6 +61,7 @@ router.get('/getAllCourses', async (req, res) => {
 });
 
 // Delete course by ID
+// Delete course by ID
 router.delete('/deleteCourseByIdByAdmin', async (req, res) => {
     try {
         const { _id } = req.body;
@@ -74,13 +72,19 @@ router.delete('/deleteCourseByIdByAdmin', async (req, res) => {
             return res.status(404).json({ message: 'Course not found' });
         }
 
+        // Ensure the path is correct by resolving it
         if (deletedCourse.imgPath) {
-            const filePath = path.join('G:/UNIVERSITY DATA/MSICT/SEMESTER 4/IDP/Final project/Kangan App/backend', deletedCourse.imgPath);
+            const filePath = path.resolve('uploads', deletedCourse.imgPath.replace('/uploads/', ''));
             console.log('Attempting to delete file at:', filePath);
 
             try {
-                fs.unlinkSync(filePath);
-                console.log('File deleted successfully');
+                // Check if the file exists before attempting to delete
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);  // Delete the image from the filesystem
+                    console.log('File deleted successfully');
+                } else {
+                    console.log('File does not exist:', filePath);
+                }
             } catch (err) {
                 console.error('Error deleting file:', err);
             }
@@ -93,10 +97,12 @@ router.delete('/deleteCourseByIdByAdmin', async (req, res) => {
     }
 });
 
+
+
 // Update course by ID
 router.put('/updateCourseByIdByAdmin', upload.single('imgPath'), async (req, res) => {
     try {
-        const { _id, courseName, description, teacher } = req.body; // 👈 get teacher from body
+        const { _id, courseName, description } = req.body; // Removed teacher reference
 
         if (!_id) {
             return res.status(400).json({ message: 'Course ID is required' });
@@ -109,26 +115,23 @@ router.put('/updateCourseByIdByAdmin', upload.single('imgPath'), async (req, res
 
         existingCourse.courseName = courseName || existingCourse.courseName;
         existingCourse.description = description || existingCourse.description;
-        existingCourse.teacher = teacher || existingCourse.teacher; // 👈 update teacher if provided
 
         if (req.file) {
             const newImagePath = `/uploads/${req.file.filename}`;
 
+            // Check and delete old image if it exists
             if (existingCourse.imgPath) {
-                const oldImagePath = path.join(
-                    'G:/UNIVERSITY DATA/MSICT/SEMESTER 4/IDP/Final project/Kangan App/backend',
-                    existingCourse.imgPath
-                );
+                const oldImagePath = path.join('uploads', existingCourse.imgPath.replace('/uploads/', '')); // Ensure it's the correct file path
 
                 try {
-                    fs.unlinkSync(oldImagePath);
+                    await fs.unlinkSync(oldImagePath);  // Delete the old image synchronously
                     console.log('Old image deleted successfully');
                 } catch (err) {
                     console.error('Error deleting old image:', err);
                 }
             }
 
-            existingCourse.imgPath = newImagePath;
+            existingCourse.imgPath = newImagePath;  // Update the image path with the new image
         }
 
         const updatedCourse = await existingCourse.save();
@@ -140,7 +143,8 @@ router.put('/updateCourseByIdByAdmin', upload.single('imgPath'), async (req, res
     }
 });
 
-//http://localhost:3001/courses/all
+
+// Public Route to get all courses
 router.get('/all', async (req, res) => {
     try {
         const courses = await course.find();
@@ -149,6 +153,5 @@ router.get('/all', async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch courses', error: err });
     }
 });
-
 
 export default router;
