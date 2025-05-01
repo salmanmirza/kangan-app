@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types'; 
+import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import NavBar from '../../components/navBar';
@@ -10,7 +10,7 @@ import TextareaAutosize from '@mui/material/TextareaAutosize';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    Box, Button, Modal, Typography, Stack, TextField,
+    Box, Button, Modal, Typography, Stack, TextField, CircularProgress,
     TableContainer, Paper
 } from '@mui/material';
 
@@ -42,27 +42,55 @@ export default function Courses() {
     const [open, setOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [courses, setCourses] = useState([]);
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
     const [userFormData, setUserFormData] = useState({
         _id: '',
         courseName: '',
         description: '',
         imgPath: null,
     });
+    const [loading, setLoading] = useState(false);
+    const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
     useEffect(() => {
+        console.log('User:', user);
         getCourses();
     }, []);
 
     const getCourses = async () => {
+        setIsLoadingCourses(true);
         try {
-            const response = await axios.get("http://localhost:3001/courses/getAllCourses");
-            setCourses(response.data);
+            const token = localStorage.getItem('token');
+            const userId = user._id;
+
+            const response = await axios.get(
+                `http://localhost:3001/courses/getCoursesByRole?_id=${userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            console.log('Courses fetched:', response.data);
+            setCourses(response.data || []);
         } catch (err) {
-            console.error("Error fetching courses:", err);
+            console.error('Error fetching courses:', err);
+            setCourses([]);
+        } finally {
+            setIsLoadingCourses(false);
         }
     };
 
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setOpen(false);
+        setUserFormData({
+            _id: '',
+            courseName: '',
+            description: '',
+            imgPath: null,
+        });
+    };
 
     const handleAddNewCourse = () => {
         setUserFormData({
@@ -74,7 +102,7 @@ export default function Courses() {
         setOpen(true);
     };
 
-    const handleEditAndUpdate = async (row) => {
+    const handleEditAndUpdate = (row) => {
         setUserFormData({
             _id: row._id,
             courseName: row.courseName,
@@ -99,28 +127,35 @@ export default function Courses() {
         const formData = new FormData();
         formData.append('courseName', userFormData.courseName);
         formData.append('description', userFormData.description);
-        formData.append('_id', userFormData._id); // Send the course ID to update
+        formData.append('_id', userFormData._id);
         if (userFormData.imgPath) {
             formData.append('imgPath', userFormData.imgPath);
         }
 
-        if (isEditMode) {
-            await axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
-        } else {
-            await axios.post("http://localhost:3001/courses/addNewCourseByAdmin", formData, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
+        try {
+            setLoading(true);
+            if (isEditMode) {
+                await axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+            } else {
+                await axios.post("http://localhost:3001/courses/addNewCourseByAdmin", formData, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+            }
+            getCourses();
+            handleClose();
+        } catch (err) {
+            console.error('Error submitting course:', err);
+        } finally {
+            setLoading(false);
         }
-        handleClose();
-        getCourses();
     };
 
     const handleDelete = async (id) => {
@@ -138,8 +173,58 @@ export default function Courses() {
 
     return (
         <>
-            {/* Modal code */}
-            <Box>
+            <NavBar />
+            <Box sx={{ p: 3 }}>
+                {/* Add Course Button (Admin Only) */}
+                {user?.role === 'admin' && (
+                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                        <Button onClick={handleAddNewCourse} variant="contained">
+                            Add Course
+                        </Button>
+                    </Box>
+                )}
+
+                {/* Courses Display */}
+                {isLoadingCourses ? (
+                    <Box display="flex" justifyContent="center" mt={4}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <Box mt={4} display="flex" flexWrap="wrap" gap={3}>
+                        {courses.length > 0 ? (
+                            courses.map((course) => (
+                                <Box key={course._id} sx={{ position: 'relative', width: 300 }}>
+                                    <Card sx={{ width: 300 }}>
+                                        <CardActionArea>
+                                            {course.imgPath && (
+                                                <CardMedia
+                                                    component="img"
+                                                    height="160"
+                                                    image={`http://localhost:3001${course.imgPath}`}
+                                                    alt={course.courseName}
+                                                />
+                                            )}
+                                            <CardContent>
+                                                <Typography gutterBottom variant="h6" component="div">
+                                                    {course.courseName}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {course.description}
+                                                </Typography>
+                                            </CardContent>
+                                        </CardActionArea>
+                                    </Card>
+                                </Box>
+                            ))
+                        ) : (
+                            <Typography variant="h6" sx={{ width: '100%', textAlign: 'center', mt: 4 }}>
+                                No courses available for your role
+                            </Typography>
+                        )}
+                    </Box>
+                )}
+
+                {/* Edit/Add Course Modal */}
                 <Modal open={open} onClose={handleClose}>
                     <Box sx={style} component="form" onSubmit={handleSubmit}>
                         <Typography variant="h6" mb={2}>
@@ -153,6 +238,7 @@ export default function Courses() {
                                 value={userFormData.courseName}
                                 onChange={handleChange}
                                 fullWidth
+                                required
                             />
 
                             <TextareaAutosize
@@ -168,6 +254,7 @@ export default function Courses() {
                                     borderColor: '#ccc',
                                     borderRadius: 4
                                 }}
+                                required
                             />
 
                             <Stack direction="row" spacing={2} alignItems="center">
@@ -177,12 +264,16 @@ export default function Courses() {
                                     startIcon={<CloudUploadIcon />}
                                 >
                                     {userFormData.imgPath && typeof userFormData.imgPath !== 'string'
-                                        ? 'Change Doc'
-                                        : 'Upload Doc'}
-                                    <VisuallyHiddenInput type="file" onChange={handleFileChange} />
+                                        ? 'Change Image'
+                                        : 'Upload Image'}
+                                    <VisuallyHiddenInput 
+                                        type="file" 
+                                        onChange={handleFileChange} 
+                                        accept="image/*"
+                                    />
                                 </Button>
 
-                                {(isEditMode && userFormData.imgPath) && (
+                                {(userFormData.imgPath) && (
                                     <Box
                                         sx={{
                                             width: 160,
@@ -204,86 +295,17 @@ export default function Courses() {
                                 )}
                             </Stack>
 
-                            <Button variant="contained" type="submit">
-                                {isEditMode ? 'Update Course' : 'Add Course'}
+                            <Button 
+                                variant="contained" 
+                                type="submit" 
+                                disabled={loading}
+                                sx={{ mt: 2 }}
+                            >
+                                {loading ? <CircularProgress size={24} /> : isEditMode ? 'Update Course' : 'Add Course'}
                             </Button>
                         </Stack>
                     </Box>
                 </Modal>
-
-                <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <Button onClick={handleAddNewCourse} variant="contained">Add Course</Button>
-                </Box>
-
-                <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1100 }} />
-            </Box>
-
-            {/* Card displaying all courses */}
-            <Box mt={4} display="flex" flexWrap="wrap" gap={3}>
-                {courses.map((course) => (
-                    <Box
-                        key={course._id}
-                        sx={{
-                            position: 'relative',
-                            '&:hover .action-buttons': {
-                                opacity: 1,
-                            },
-                        }}
-                    >
-                        <Card sx={{ width: 300, position: 'relative' }}>
-                            <CardActionArea>
-                                {course.imgPath && (
-                                    <CardMedia
-                                        component="img"
-                                        height="160"
-                                        image={`http://localhost:3001${course.imgPath}`}
-                                        alt={course.courseName}
-                                    />
-                                )}
-                                <CardContent>
-                                    <Typography gutterBottom variant="h6" component="div">
-                                        {course.courseName}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        {course.description}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-
-                            <Box
-                                className="action-buttons"
-                                sx={{
-                                    position: 'absolute',
-                                    bottom: 8,
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    display: 'flex',
-                                    gap: 1,
-                                    opacity: 0,
-                                    transition: 'opacity 0.3s ease-in-out',
-                                    zIndex: 10,
-                                }}
-                            >
-                                <Button
-                                    size="small"
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => handleEditAndUpdate(course)}
-                                >
-                                    Edit
-                                </Button>
-                                <Button
-                                    size="small"
-                                    variant="contained"
-                                    color="error"
-                                    onClick={() => handleDelete(course._id)}
-                                >
-                                    Delete
-                                </Button>
-                            </Box>
-                        </Card>
-                    </Box>
-                ))}
             </Box>
         </>
     );

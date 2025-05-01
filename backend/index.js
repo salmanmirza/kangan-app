@@ -14,6 +14,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import user from './models/userModel.js';   
 import assignmentRoutes from './routes/assignmentRoutes.js';
 import enrollmentsRoutes from "./routes/enrollmentRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js"
 
 const app = express();
 app.use(express.json());
@@ -30,6 +31,7 @@ app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/assignments", assignmentRoutes);
 app.use("/enrollments", enrollmentsRoutes);
+app.use("/dashboard",dashboardRoutes);
 // app.use("/auth", require("./routes/authRoutes.js"));
 
 

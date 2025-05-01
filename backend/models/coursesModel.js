@@ -4,7 +4,12 @@ const courseSchema = new mongoose.Schema(
     {
         courseName: { type: String, required: true },
         description: { type: String, required: true },
-        imgPath: { type: String }, // Optional image path
+        imgPath: { type: String },
+
+        // References
+        teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // One teacher
+        students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Many students
+
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date }
     }
