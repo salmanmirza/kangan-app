@@ -1,13 +1,14 @@
 import express from 'express';
+import multer from 'multer';
+import fs from 'fs-extra';
+import path from 'path';
 import bcrypt from 'bcrypt';
+import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
-import Course from '../models/coursesModel.js'; // Assuming you have a Course model
-import verifyToken from '../middlewares/authMiddleware.js';
-import authorizedRoles from '../middlewares/roleMiddleware.js';
 
 const router = express.Router();
 
-router.get('/admin', verifyToken, authorizedRoles(['admin']), async (req, res) => {
+router.get('/admin', async (req, res) => {
     try {
         const userData = await User.find()
             .populate('courses')  // Populate courses for students (array of courses)
@@ -24,8 +25,8 @@ router.get('/admin', verifyToken, authorizedRoles(['admin']), async (req, res) =
 
 
 // Delete user by ID (Admin only)
-router.delete('/deleteById', verifyToken, authorizedRoles(['admin']), async (req, res) => {
-    const { _id } = req.body;
+router.delete('/deleteById', async (req, res) => {
+        const { _id } = req.body;
     if (!_id) {
         return res.status(400).json({ message: 'User ID is required' });
     }
@@ -59,9 +60,9 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
         studentGuardian
     } = req.body;
 
-    if (!_id) {
+        if (!_id) {
         return res.status(400).json({ message: 'User ID is required' });
-    }
+        }
 
     try {
         let hashedPassword;
@@ -140,9 +141,17 @@ router.post('/addNewUserByAdmin', async (req, res) => {
     } catch (err) {
         console.error('Error adding new user:', err);
         res.status(500).json({ error: 'Failed to add user' });
-    }
+        }
 });
 
-
+router.get('/getAllTeachers', async (req, res) => {
+    try {
+        const teachers = await User.find({ role: 'teacher' }).select('-password');
+        res.status(200).json(teachers);
+    } catch (error) {
+        console.error('Error fetching teachers:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
 
 export default router;

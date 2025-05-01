@@ -132,5 +132,55 @@ router.put('/updateAssignmentById', upload.single('assignmentFile'), async (req,
         res.status(500).json({ message: 'Error updating assignment', error: error.message });
     }
 });
+// const { role } = req.query;
+router.get('/getAssignmentsByRole', async (req, res) => {
+    try {
+        // Extract role and teacherId from query params
+        const { role, teacherId } = req.query;
+
+        console.log("Role:", role);  // Log for debugging
+        console.log("Teacher ID:", teacherId);
+
+        // Check if role is 'admin'
+        if (role === 'admin') {
+            // If the user is an admin, return all assignments
+            const assignments = await Assignment.find().populate('course teacher');
+            return res.json(assignments);  // Send the assignments in the response
+        }
+        // Check if role is 'teacher'
+        else if (role === 'teacher') {
+            // Fetch teacher details and their assigned course
+            const teacher = await User.findOne({ _id: teacherId, role: role }).populate('course');
+
+            if (!teacher) {
+                // If teacher is not found, send error message
+                return res.status(404).json({ message: 'Teacher not found' });
+            }
+
+            if (!teacher.course) {
+                // If the teacher is not assigned to a course, send error message
+                return res.status(400).json({ message: 'This teacher is not assigned to any course' });
+            }
+
+            // Fetch assignments for the teacher's course
+            const assignments = await Assignment.find({ course: teacher.course._id })
+                .populate('course')
+                .populate('teacher');
+
+            // Send assignments as response
+            return res.json(assignments);  // Properly return assignments
+        }
+
+        // If the role is neither 'admin' nor 'teacher'
+        return res.status(403).json({ message: 'Unauthorized access' });
+
+    } catch (error) {
+        // Log and send any errors that occur during the request
+        console.error('Error fetching assignments:', error);
+        return res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
 
 export default router;

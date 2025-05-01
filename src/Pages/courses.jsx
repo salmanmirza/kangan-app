@@ -127,7 +127,6 @@ export default function Courses() {
         const formData = new FormData();
         formData.append('courseName', userFormData.courseName);
         formData.append('description', userFormData.description);
-        formData.append('_id', userFormData._id);
         if (userFormData.imgPath) {
             formData.append('imgPath', userFormData.imgPath);
         }
@@ -135,6 +134,7 @@ export default function Courses() {
         try {
             setLoading(true);
             if (isEditMode) {
+                formData.append('_id', userFormData._id);
                 await axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem("token")}`,
@@ -142,6 +142,7 @@ export default function Courses() {
                     }
                 });
             } else {
+                formData.append('teacherId', user._id);
                 await axios.post("http://localhost:3001/courses/addNewCourseByAdmin", formData, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem("token")}`,
@@ -266,9 +267,9 @@ export default function Courses() {
                                     {userFormData.imgPath && typeof userFormData.imgPath !== 'string'
                                         ? 'Change Image'
                                         : 'Upload Image'}
-                                    <VisuallyHiddenInput 
-                                        type="file" 
-                                        onChange={handleFileChange} 
+                                    <VisuallyHiddenInput
+                                        type="file"
+                                        onChange={handleFileChange}
                                         accept="image/*"
                                     />
                                 </Button>
@@ -295,9 +296,9 @@ export default function Courses() {
                                 )}
                             </Stack>
 
-                            <Button 
-                                variant="contained" 
-                                type="submit" 
+                            <Button
+                                variant="contained"
+                                type="submit"
                                 disabled={loading}
                                 sx={{ mt: 2 }}
                             >

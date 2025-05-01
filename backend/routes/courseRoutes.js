@@ -26,6 +26,7 @@ const upload = multer({ storage });
 // Route to handle adding a new course
 router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) => {
     try {
+        console.log(req.body);
         const { courseName, description, teacherId } = req.body; // Added teacherId
         const createdAt = new Date();
 

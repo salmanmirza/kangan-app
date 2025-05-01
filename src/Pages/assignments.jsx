@@ -63,9 +63,27 @@ export default function Assignments() {
 
     // Fetch all assignments
     const fetchAssignments = async () => {
-        const response = await axios.get('http://localhost:3001/assignments/getAllAssignments');
-        setAssignments(response.data);
+        const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
+        const teacherId = user._id;
+        console.log(user.role);
+        console.log(teacherId);
+        if (!user) {
+            console.error("User not found in localStorage.");
+            return;
+        }
+
+        try {
+            // Pass the role as a query parameter along with the Authorization token
+            const response = await axios.get('http://localhost:3001/assignments/getAssignmentsByRole', {
+                headers: { Authorization: `Bearer ${user.token}` }, // Assuming token is passed for auth
+                params: { role: user.role, teacherId: user._id}  // Pass the role as a query parameter
+            });
+            setAssignments(response.data);
+        } catch (error) {
+            console.error("Error fetching assignments:", error);
+        }
     };
+
 
     // Open modal for adding a new assignment
     const handleOpen = () => {
