@@ -44,7 +44,7 @@ export default function Register() {
                         {/* </Stack> */}
                         <Button variant="contained" type="submit" fullWidth sx={{ marginTop: 6 }}>Register</Button>
                         <Box sx={{ marginTop: 4 }}>
-                        {/*this is comment */}
+                        {/*this is comment by irfan */}
                             <Typography variant="h8" sx={{ marginRight: 1 }}>Already a User?</Typography><Link href="/" underline="none">Login</Link>
                         </Box>
                     </Paper>
