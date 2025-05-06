@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs-extra';
+import mongoose from 'mongoose';
 import path from 'path';
 import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
@@ -57,6 +58,32 @@ router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) =
         res.status(500).json({ error: 'Failed to add new Course' });
     }
 });
+
+// getCoursesForTeacher
+// GET /courses/getCoursesForTeacher?teacherId=xxxxx
+router.get('/getCoursesForTeacher', async (req, res) => {
+    try {
+        const { teacherId } = req.query;
+
+        if (!teacherId) {
+            return res.status(400).json({ error: 'teacherId is required' });
+        }
+
+        // No need to convert to ObjectId manually
+        const courses = await Course.find({ teacher: teacherId });
+
+        return res.status(200).json({ courses });
+    } catch (error) {
+        console.error('Error fetching courses for teacher:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+
+
+
+
 
 // Get all courses
 router.get('/getAllCourses', async (req, res) => {

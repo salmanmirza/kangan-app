@@ -9,6 +9,7 @@ const courseSchema = new mongoose.Schema(
         // References
         teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // One teacher
         students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Many students
+        assignments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Assignment' }],
 
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date }

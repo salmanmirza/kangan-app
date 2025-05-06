@@ -26,7 +26,7 @@ router.get('/admin', async (req, res) => {
 
 // Delete user by ID (Admin only)
 router.delete('/deleteById', async (req, res) => {
-        const { _id } = req.body;
+    const { _id } = req.body;
     if (!_id) {
         return res.status(400).json({ message: 'User ID is required' });
     }
@@ -60,9 +60,9 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
         studentGuardian
     } = req.body;
 
-        if (!_id) {
+    if (!_id) {
         return res.status(400).json({ message: 'User ID is required' });
-        }
+    }
 
     try {
         let hashedPassword;
@@ -132,7 +132,7 @@ router.post('/addNewUserByAdmin', async (req, res) => {
             // Assign courses for students (array of course IDs)
             courses: role === 'student' ? courses : [],
             // Assign single course for teachers
-            course: role === 'teacher' ? course : null  
+            course: role === 'teacher' ? course : null
         });
 
         // Save the user
@@ -141,7 +141,7 @@ router.post('/addNewUserByAdmin', async (req, res) => {
     } catch (err) {
         console.error('Error adding new user:', err);
         res.status(500).json({ error: 'Failed to add user' });
-        }
+    }
 });
 
 router.get('/getAllTeachers', async (req, res) => {
@@ -151,6 +151,47 @@ router.get('/getAllTeachers', async (req, res) => {
     } catch (error) {
         console.error('Error fetching teachers:', error);
         res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// Get list of users with role 'student'
+router.get('/getAllUserWithRoleStd', async (req, res) => {
+    try {
+        const students = await User.find({ role: 'student' }); // Find users with role 'student'
+
+        if (!students.length) {
+            return res.status(404).json({ message: 'No students found' });
+        }
+
+        return res.status(200).json(students); // Return students
+    } catch (err) {
+        console.error('Error fetching students:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+router.get('/totalEnrolledStds', async (req, res) => {
+    try {
+        const { teacherId } = req.query; // Assuming req.user is populated via auth middleware
+
+        // Find the teacher and get their course
+        const teacher = await User.findById(teacherId).select('role course');
+
+        if (!teacher || teacher.role !== 'teacher') {
+            return res.status(403).json({ message: 'Access denied: only teachers can access this.' });
+        }
+
+        // Count students enrolled in this course
+        const count = await User.countDocuments({
+            role: 'student',
+            courses: teacher.course
+        });
+
+        res.status(200).json({ studentCount: count });
+    } catch (err) {
+        console.error('Failed to get student count:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

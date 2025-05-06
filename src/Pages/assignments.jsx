@@ -22,6 +22,7 @@ export default function Assignments() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [assignments, setAssignments] = useState([]);
     const [courses, setCourses] = useState([]);
+    const [userRole, setUserRole] = useState('');
     const [teachers, setTeachers] = useState([]); // State for teachers
     const [formData, setFormData] = useState({
         _id: '',
@@ -36,6 +37,10 @@ export default function Assignments() {
 
     // Fetch assignments, courses, and teachers when component mounts
     useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.role) {
+            setUserRole(user.role);
+        }
         fetchAssignments();
         getCourses();
         getTeachers(); // Fetch teachers
@@ -50,6 +55,8 @@ export default function Assignments() {
             console.error("Error fetching courses:", err);
         }
     };
+    // fetch all the courses in which teacher is tutoring
+
 
     // Fetch teachers from the backend
     const getTeachers = async () => {
@@ -76,7 +83,7 @@ export default function Assignments() {
             // Pass the role as a query parameter along with the Authorization token
             const response = await axios.get('http://localhost:3001/assignments/getAssignmentsByRole', {
                 headers: { Authorization: `Bearer ${user.token}` }, // Assuming token is passed for auth
-                params: { role: user.role, teacherId: user._id}  // Pass the role as a query parameter
+                params: { role: user.role, Id: user._id }  // Pass the role as a query parameter
             });
             setAssignments(response.data);
         } catch (error) {
@@ -158,6 +165,7 @@ export default function Assignments() {
 
     // Delete an assignment
     const handleDelete = async (id) => {
+        if (userRole === 'student') return; // Prevent student from deleting
         if (window.confirm('Do you want to delete this assignment?')) {
             const data = { id };
             await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', { data });
@@ -249,9 +257,12 @@ export default function Assignments() {
                 </Box>
             </Modal>
 
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
-            </Box>
+            {/* Conditionally render Add button */}
+            {userRole !== 'student' && (
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
+                </Box>
+            )}
 
             <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1200 }}>
                 <Table>
@@ -264,7 +275,7 @@ export default function Assignments() {
                             <TableCell>Teacher</TableCell>
                             <TableCell>Due Date</TableCell>
                             <TableCell>File</TableCell>
-                            <TableCell>Actions</TableCell>
+                            {userRole !== 'student' && <TableCell>Actions</TableCell>}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -277,13 +288,21 @@ export default function Assignments() {
                                 <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
                                 <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                                 <TableCell>
-                                    <a href={`http://localhost:3001/uploads/${assignment.assignmentFile}`} target="_blank" rel="noopener noreferrer">
-                                        {assignment.assignmentFile}
+                                    <a
+                                        href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`}
+                                        download
+                                        rel="noopener noreferrer"
+                                    >
+                                        Assignment File
                                     </a>
                                 </TableCell>
                                 <TableCell>
-                                    <Button variant="contained" color="info" onClick={() => handleEdit(assignment)}>Edit</Button> |
-                                    <Button variant="contained" color="error" onClick={() => handleDelete(assignment._id)}>Delete</Button>
+                                    {userRole !== 'student' && (
+                                        <>
+                                            <Button variant="contained" color="info" onClick={() => handleEdit(assignment)}>Edit</Button> |
+                                            <Button variant="contained" color="error" onClick={() => handleDelete(assignment._id)}>Delete</Button>
+                                        </>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

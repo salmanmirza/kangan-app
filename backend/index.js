@@ -6,12 +6,12 @@ import path from 'path';
 // const cors = require("cors");
 import cors from 'cors';
 // const userModel = require('./models/user');
-import bycrypt from 'bcrypt';
+
 import jwt from 'jsonwebtoken';
-import authRoutes from './routes/authRoutes.js'; 
+import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
-import user from './models/userModel.js';   
+import user from './models/userModel.js';
 import assignmentRoutes from './routes/assignmentRoutes.js';
 import enrollmentsRoutes from "./routes/enrollmentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js"
@@ -27,11 +27,11 @@ mongoose.connect("mongodb://127.0.0.1:27017/kangan");
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/uploads/assignments', express.static(path.join(process.cwd(), 'uploads/assignments')));
 app.use("/auth", authRoutes);
-app.use("/users", userRoutes); 
+app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/assignments", assignmentRoutes);
 app.use("/enrollments", enrollmentsRoutes);
-app.use("/dashboard",dashboardRoutes);
+app.use("/dashboard", dashboardRoutes);
 // app.use("/auth", require("./routes/authRoutes.js"));
 
 
@@ -62,7 +62,7 @@ app.use("/dashboard",dashboardRoutes);
 //                'token':  token,
 //                 'message': "Success",
 //                 'user': user
-                
+
 
 //             });
 //         }
@@ -120,6 +120,6 @@ app.use("/dashboard",dashboardRoutes);
 
 app.listen(3001, () => {
     console.log("Server is running on port 3001");
-// 
+    // 
 
 });

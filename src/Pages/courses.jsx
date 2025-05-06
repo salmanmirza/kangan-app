@@ -74,6 +74,11 @@ export default function Courses() {
 
             console.log('Courses fetched:', response.data);
             setCourses(response.data || []);
+
+
+            const courses = response.data;
+            localStorage.setItem('totalCountCourses', courses.length);
+            localStorage.setItem('courses', JSON.stringify(courses));
         } catch (err) {
             console.error('Error fetching courses:', err);
             setCourses([]);

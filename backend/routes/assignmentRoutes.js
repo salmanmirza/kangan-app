@@ -136,10 +136,11 @@ router.put('/updateAssignmentById', upload.single('assignmentFile'), async (req,
 router.get('/getAssignmentsByRole', async (req, res) => {
     try {
         // Extract role and teacherId from query params
-        const { role, teacherId } = req.query;
+        const { role, Id } = req.query;
+        // console.log(req.query);
 
         console.log("Role:", role);  // Log for debugging
-        console.log("Teacher ID:", teacherId);
+        console.log("Teacher ID:", Id);
 
         // Check if role is 'admin'
         if (role === 'admin') {
@@ -150,7 +151,7 @@ router.get('/getAssignmentsByRole', async (req, res) => {
         // Check if role is 'teacher'
         else if (role === 'teacher') {
             // Fetch teacher details and their assigned course
-            const teacher = await User.findOne({ _id: teacherId, role: role }).populate('course');
+            const teacher = await User.findOne({ _id: Id, role: role }).populate('course');
 
             if (!teacher) {
                 // If teacher is not found, send error message
@@ -169,6 +170,24 @@ router.get('/getAssignmentsByRole', async (req, res) => {
 
             // Send assignments as response
             return res.json(assignments);  // Properly return assignments
+        }
+        else if (role === 'student') {
+            const student = await User.findOne({ _id: Id, role }).populate('courses');  // Changed to 'courses' to support multiple courses
+
+            if (!student) {
+                return res.status(404).json({ message: 'Student not found' });
+            }
+
+            if (!student.courses || student.courses.length === 0) {
+                return res.status(400).json({ message: 'This student is not enrolled in any courses' });
+            }
+
+            // Fetch assignments for all courses the student is enrolled in
+            const assignments = await Assignment.find({ course: { $in: student.courses.map(course => course._id) } })
+                .populate('course')
+                .populate('teacher');
+
+            return res.json(assignments);  // Return all relevant assignments for student
         }
 
         // If the role is neither 'admin' nor 'teacher'
