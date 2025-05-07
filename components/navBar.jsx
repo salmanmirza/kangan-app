@@ -55,12 +55,13 @@ export default function NavBar() {
         try {
             await axios.put(`http://localhost:3001/users/editUpdateUserById?userId=${userId}`, formData);
 
-            // Update localStorage with new user info
+            // ✅ Preserve the user's role in localStorage
             localStorage.setItem('user', JSON.stringify({
                 _id: formData._id,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
-                email: formData.email
+                email: formData.email,
+                role: user.role // include the original role
             }));
 
             setOpenModal(false);

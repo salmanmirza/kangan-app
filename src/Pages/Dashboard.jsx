@@ -3,6 +3,9 @@ import { Box, CssBaseline, Typography, Grid, Card, CardContent } from '@mui/mate
 import { Outlet, useLocation } from 'react-router-dom';
 import NavBar from '../../components/navBar';
 import axios from 'axios';
+import StudentTodoSimpleCard from '../../components/toDoList';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+<NotificationsIcon fontSize="small" sx={{ mr: 1 }} />
 
 export default function Dashboard() {
   const location = useLocation();
@@ -69,7 +72,7 @@ export default function Dashboard() {
             assignmentsCount: assignmentRes.data.totalAssignments || 0,
             studentsCount: totalEnrolledStudents,
           });
-        } else if (role === 'admin' || role === 'student') {
+        } else if (role === 'admin') { // || role === 'student'
           const res = await axios.get('http://localhost:3001/dashboard/dashboardStats', {
             params,
             headers: { Authorization: `Bearer ${token}` },
@@ -114,9 +117,8 @@ export default function Dashboard() {
 
     if (role === 'student') {
       return (
-        <Grid container spacing={3}>
-          <StatCard title="Total Courses" value={stats.courses} />
-          <StatCard title="Total Assignments" value={stats.assignments} />
+        <Grid item xs={12}>
+          <StudentTodoSimpleCard />
         </Grid>
       );
     }

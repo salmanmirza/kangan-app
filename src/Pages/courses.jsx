@@ -219,6 +219,40 @@ export default function Courses() {
                                                 </Typography>
                                             </CardContent>
                                         </CardActionArea>
+
+                                        {user?.role === 'admin' && (
+                                            <Box
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 8,
+                                                    right: 8,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 1,
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                                    padding: 1,
+                                                    borderRadius: 1,
+                                                    boxShadow: 1,
+                                                }}
+                                            >
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="primary"
+                                                    onClick={() => handleEditAndUpdate(course)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="error"
+                                                    onClick={() => handleDelete(course._id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </Box>
+                                        )}
                                     </Card>
                                 </Box>
                             ))

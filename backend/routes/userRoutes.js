@@ -195,4 +195,47 @@ router.get('/totalEnrolledStds', async (req, res) => {
     }
 });
 
+
+// GET: Fetch user by ID
+router.get('/getUserToUpdateById', async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        if (!userId) return res.status(400).json({ message: 'User ID is required' });
+
+        const user = await User.findById(userId).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.json(user);
+    } catch (err) {
+        console.error('Error fetching user:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// PUT: Update user by ID
+router.put('/editUpdateUserById', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const { firstName, lastName, email, password } = req.body;
+
+        if (!userId) return res.status(400).json({ message: 'User ID is required' });
+
+        const updateFields = { firstName, lastName, email, updatedAt: new Date() };
+
+        if (password && password.trim() !== '') {
+            const salt = await bcrypt.genSalt(10);
+            updateFields.password = await bcrypt.hash(password, salt);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateFields, { new: true });
+
+        if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+
+        res.json({ message: 'User updated successfully' });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 export default router;
