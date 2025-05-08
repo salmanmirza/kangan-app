@@ -73,7 +73,7 @@ export default function Dashboard() {
             studentsCount: totalEnrolledStudents,
           });
         } else if (role === 'admin') { // || role === 'student'
-          const res = await axios.get('http://localhost:3001/dashboard/dashboardStats', {
+          const res = await axios.get('http://localhost:3001/dashboard/dashboardStats' , {
             params,
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -81,7 +81,7 @@ export default function Dashboard() {
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
-        setError('Failed to load stats.');
+        setError('Failed to load stats.' );
       } finally {
         setLoading(false);
       }
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
   // ✅ Dashboard content renderer
   const renderContent = () => {
-    if (loading) return <Typography variant="h6">Loading...</Typography>;
+    if (loading) return <Typography variant="h6">Loading....</Typography>;
     if (error) return <Typography variant="h6" color="error">{error}</Typography>;
 
     if (role === 'admin') {
@@ -123,7 +123,7 @@ export default function Dashboard() {
       );
     }
 
-    return <Typography>No dashboard available for your role.</Typography>;
+    return <Typography>No dashboard AVAILABLE for your role.</Typography>;
   };
 
   return (

@@ -84,7 +84,13 @@ export default function EnrollmentPage() {
 
         try {
             if (isEditMode) {
-                await axios.put('http://localhost:3001/enrollments/updateEnrollmentById', formData);
+                await axios.put('http://localhost:3001/enrollments/updateEnrollmentById', formData,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
             } else {
                 await axios.post('http://localhost:3001/enrollments/addEnrollment', formData);
             }

@@ -151,169 +151,180 @@ export default function Assignments() {
 
         try {
             if (isEditMode) {
-                await axios.put('http://localhost:3001/assignments/updateAssignmentById', form);
-            } else {
-                await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                } // Assuming token is passed for auth   
-            });
-            }
+                await axios.put('http://localhost:3001/assignments/updateAssignmentById', form,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        }
+                        }
+                        );
+
+                    } else {
+                    await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        } // Assuming token is passed for auth   
+                    });
+                }
 
             handleClose();
-            fetchAssignments();
-        } catch (error) {
-            console.error('Error in form submission:', error);
-        }
-    };
+                fetchAssignments();
+            } catch (error) {
+                console.error('Error in form submission:', error);
+            }
+        };
 
-    // Delete an assignment
-    const handleDelete = async (id) => {
-        if (userRole === 'student') return; // Prevent student from deleting
-        if (window.confirm('Do you want to delete this assignment?')) {
-            const data = { id };
-            await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', { data });
-            fetchAssignments();
-        }
-    };
+        // Delete an assignment
+        const handleDelete = async (id) => {
+            if (userRole === 'student') return; // Prevent student from deleting
+            if (window.confirm('Do you want to delete this assignment?')) {
+                const data = { id };
+                await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', { data,
+                
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                 });
+                fetchAssignments();
+            }
+        };
 
-    return (
-        <Box>
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={style} component="form" onSubmit={handleSubmit}>
-                    <Typography variant="h6">{isEditMode ? 'Edit Assignment' : 'Add Assignment'}</Typography>
-                    <Stack spacing={2} mt={2}>
-                        <TextField
-                            name="title"
-                            label="Title"
-                            type="text"
-                            value={formData.title}
-                            onChange={handleChange}
-                            fullWidth
-                        />
-                        <TextField
-                            name="description"
-                            label="Description"
-                            type="text"
-                            value={formData.description}
-                            onChange={handleChange}
-                            fullWidth
-                        />
-                        <TextField
-                            name="assignmentNo"
-                            label="Assignment No"
-                            type="number"
-                            value={formData.assignmentNo}
-                            onChange={handleChange}
-                            fullWidth
-                        />
-                        <TextField
-                            name="dueDate"
-                            label="Due Date"
-                            type="date"
-                            value={formData.dueDate}
-                            onChange={handleChange}
-                            InputLabelProps={{ shrink: true }}
-                            fullWidth
-                        />
-                        {/* Course Dropdown */}
-                        <FormControl fullWidth>
-                            <InputLabel>Course</InputLabel>
-                            <Select
-                                name="course"
-                                value={formData.course || ''}
+        return (
+            <Box>
+                <Modal open={open} onClose={handleClose}>
+                    <Box sx={style} component="form" onSubmit={handleSubmit}>
+                        <Typography variant="h6">{isEditMode ? 'Edit Assignment' : 'Add Assignment'}</Typography>
+                        <Stack spacing={2} mt={2}>
+                            <TextField
+                                name="title"
+                                label="Title"
+                                type="text"
+                                value={formData.title}
                                 onChange={handleChange}
-                                label="Course"
-                            >
-                                <MenuItem value="">Select a Course</MenuItem>
-                                {courses.map((course) => (
-                                    <MenuItem key={course._id} value={course._id}>
-                                        {course.courseName}  {/* Display course name */}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        {/* Teacher Dropdown */}
-                        <FormControl fullWidth>
-                            <InputLabel>Teacher</InputLabel>
-                            <Select
-                                name="teacher"
-                                value={formData.teacher || ''}
+                                fullWidth
+                            />
+                            <TextField
+                                name="description"
+                                label="Description"
+                                type="text"
+                                value={formData.description}
                                 onChange={handleChange}
-                                label="Teacher"
-                            >
-                                <MenuItem value="">Select a Teacher</MenuItem>
-                                {teachers.map((teacher) => (
-                                    <MenuItem key={teacher._id} value={teacher._id}>
-                                        {teacher.firstName} {teacher.lastName}  {/* Concatenate first and last names */}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <Button variant="outlined" component="label">
-                            Attach File
-                            <input hidden type="file" name="assignmentFile" onChange={handleChange} />
-                        </Button>
-                        <Button variant="contained" type="submit">
-                            {isEditMode ? 'Update' : 'Add'}
-                        </Button>
-                    </Stack>
-                </Box>
-            </Modal>
+                                fullWidth
+                            />
+                            <TextField
+                                name="assignmentNo"
+                                label="Assignment No"
+                                type="number"
+                                value={formData.assignmentNo}
+                                onChange={handleChange}
+                                fullWidth
+                            />
+                            <TextField
+                                name="dueDate"
+                                label="Due Date"
+                                type="date"
+                                value={formData.dueDate}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
+                            {/* Course Dropdown */}
+                            <FormControl fullWidth>
+                                <InputLabel>Course</InputLabel>
+                                <Select
+                                    name="course"
+                                    value={formData.course || ''}
+                                    onChange={handleChange}
+                                    label="Course"
+                                >
+                                    <MenuItem value="">Select a Course</MenuItem>
+                                    {courses.map((course) => (
+                                        <MenuItem key={course._id} value={course._id}>
+                                            {course.courseName}  {/* Display course name */}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {/* Teacher Dropdown */}
+                            <FormControl fullWidth>
+                                <InputLabel>Teacher</InputLabel>
+                                <Select
+                                    name="teacher"
+                                    value={formData.teacher || ''}
+                                    onChange={handleChange}
+                                    label="Teacher"
+                                >
+                                    <MenuItem value="">Select a Teacher</MenuItem>
+                                    {teachers.map((teacher) => (
+                                        <MenuItem key={teacher._id} value={teacher._id}>
+                                            {teacher.firstName} {teacher.lastName}  {/* Concatenate first and last names */}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Button variant="outlined" component="label">
+                                Attach File
+                                <input hidden type="file" name="assignmentFile" onChange={handleChange} />
+                            </Button>
+                            <Button variant="contained" type="submit">
+                                {isEditMode ? 'Update' : 'Add'}
+                            </Button>
+                        </Stack>
+                    </Box>
+                </Modal>
 
-            {/* Conditionally render Add button */}
-            {userRole !== 'student' && (
-                <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
-                </Box>
-            )}
+                {/* Conditionally render Add button */}
+                {userRole !== 'student' && (
+                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                        <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
+                    </Box>
+                )}
 
-            <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1200 }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Title</TableCell>
-                            <TableCell>Description</TableCell>
-                            <TableCell>Assignment No</TableCell>
-                            <TableCell>Course</TableCell>
-                            <TableCell>Teacher</TableCell>
-                            <TableCell>Due Date</TableCell>
-                            <TableCell>File</TableCell>
-                            {userRole !== 'student' && <TableCell>Actions</TableCell>}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {assignments.map((assignment) => (
-                            <TableRow key={assignment._id}>
-                                <TableCell>{assignment.title}</TableCell>
-                                <TableCell>{assignment.description}</TableCell>
-                                <TableCell>{assignment.assignmentNo}</TableCell>
-                                <TableCell>{assignment.course?.courseName || 'N/A'}</TableCell>
-                                <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
-                                <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    <a
-                                        href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`}
-                                        download
-                                        rel="noopener noreferrer"
-                                    >
-                                        Assignment File
-                                    </a>
-                                </TableCell>
-                                <TableCell>
-                                    {userRole !== 'student' && (
-                                        <>
-                                            <Button variant="contained" color="info" onClick={() => handleEdit(assignment)}>Edit</Button> |
-                                            <Button variant="contained" color="error" onClick={() => handleDelete(assignment._id)}>Delete</Button>
-                                        </>
-                                    )}
-                                </TableCell>
+                <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1200 }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Title</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Assignment No</TableCell>
+                                <TableCell>Course</TableCell>
+                                <TableCell>Teacher</TableCell>
+                                <TableCell>Due Date</TableCell>
+                                <TableCell>File</TableCell>
+                                {userRole !== 'student' && <TableCell>Actions</TableCell>}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
-    );
-}
+                        </TableHead>
+                        <TableBody>
+                            {assignments.map((assignment) => (
+                                <TableRow key={assignment._id}>
+                                    <TableCell>{assignment.title}</TableCell>
+                                    <TableCell>{assignment.description}</TableCell>
+                                    <TableCell>{assignment.assignmentNo}</TableCell>
+                                    <TableCell>{assignment.course?.courseName || 'N/A'}</TableCell>
+                                    <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
+                                    <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
+                                    <TableCell>
+                                        <a
+                                            href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`}
+                                            download
+                                            rel="noopener noreferrer"
+                                        >
+                                            Assignment File
+                                        </a>
+                                    </TableCell>
+                                    <TableCell>
+                                        {userRole !== 'student' && (
+                                            <>
+                                                <Button variant="contained" color="info" onClick={() => handleEdit(assignment)}>Edit</Button> |
+                                                <Button variant="contained" color="error" onClick={() => handleDelete(assignment._id)}>Delete</Button>
+                                            </>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+        );
+    }

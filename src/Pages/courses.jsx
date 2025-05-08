@@ -142,7 +142,7 @@ export default function Courses() {
                 formData.append('_id', userFormData._id);
                 await axios.put("http://localhost:3001/courses/updateCourseByIdByAdmin", formData, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                        'Authorization': `Bearer ${localStorage.getItem("token" )}`,
                         'Content-Type': 'multipart/form-data',
                     }
                 });
@@ -150,7 +150,7 @@ export default function Courses() {
                 formData.append('teacherId', user._id);
                 await axios.post("http://localhost:3001/courses/addNewCourseByAdmin", formData, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                        'Authorization': `Bearer ${localStorage.getItem("token" )}`,
                         'Content-Type': 'multipart/form-data',
                     }
                 });
@@ -166,7 +166,7 @@ export default function Courses() {
 
     const handleDelete = async (id) => {
         if (window.confirm("Do you want to delete the Record?")) {
-            await axios.delete("http://localhost:3001/courses/deleteCourseByIdByAdmin", {
+            await axios.delete("http://localhost:3001/courses/deleteCourseByIdByAdmin" , {
                 data: { _id: id },
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem("token")}`,
