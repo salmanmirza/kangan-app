@@ -3,6 +3,7 @@ import User from '../models/userModel.js';
 import Course from '../models/coursesModel.js';
 import Assignment from '../models/assignmentModel.js';
 import Enrollment from '../models/enrollmentModel.js';
+import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
 
 const router = express.Router();
 

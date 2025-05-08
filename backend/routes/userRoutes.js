@@ -5,6 +5,7 @@ import path from 'path';
 import bcrypt from 'bcrypt';
 import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
+import verifyToken from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 

@@ -2,6 +2,8 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs-extra';
 import path from 'path';
+import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
+// import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import Assignment from '../models/assignmentModel.js'; // Ensure that the model is imported
 import Course from '../models/coursesModel.js';  // Assuming you have a `Course` model
 import User from '../models/userModel.js';  // Assuming you have a `User` model (teacher)
@@ -20,7 +22,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Create a new assignment
-router.post('/addAssignmentByTeacher', upload.single('assignmentFile'), async (req, res) => {
+router.post('/addAssignmentByTeacher', upload.single('assignmentFile'),verifyToken, async (req, res) => {
     try {
         const { title, description, assignmentNo, course, teacher, dueDate } = req.body;
         const assignmentFile = req.file ? req.file.filename : null;

@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
+import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
 
 const router = express.Router();
 

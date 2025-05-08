@@ -3,6 +3,7 @@ import multer from 'multer';
 import fs from 'fs-extra';
 import path from 'path';
 import Enrollment from '../models/enrollmentModel.js';
+import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
 
 const router = express.Router();
 

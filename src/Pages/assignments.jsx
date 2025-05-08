@@ -153,7 +153,12 @@ export default function Assignments() {
             if (isEditMode) {
                 await axios.put('http://localhost:3001/assignments/updateAssignmentById', form);
             } else {
-                await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form);
+                await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                } // Assuming token is passed for auth   
+            });
             }
 
             handleClose();
