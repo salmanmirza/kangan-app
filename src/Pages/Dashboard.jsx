@@ -48,7 +48,7 @@ export default function Dashboard() {
 
       try {
         const token = localStorage.getItem('token');
-        const params = { role };
+        const params = { role, userId: user._id };
 
         if (role === 'teacher') {
           params.teacherId = user._id;
@@ -130,7 +130,8 @@ export default function Dashboard() {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <NavBar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
         {isRootDashboard && (
           <>
             <Typography variant="h4" gutterBottom>

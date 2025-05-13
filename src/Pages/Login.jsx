@@ -1,42 +1,58 @@
-import Paper from "@mui/material/Paper";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
-import React from "react";
-import Box from "@mui/material/Box";
-import { useState } from "react";
-import { Routes } from "react-router"
+import React, { useState, useEffect } from "react";
+import {
+    Container, Typography, Button, Paper, Stack, TextField
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Stack, TextField } from "@mui/material";
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
-
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        axios.post("http://localhost:3001/auth/login", {
-            email,
-            password
-        })
-            .then(result => {
-                if (result.data.message=== "Success") {
-                    localStorage.setItem("token", result.data.token)
-                    localStorage.setItem("user", JSON.stringify(result.data.user))
-                    localStorage.setItem("role", JSON.stringify(result.data.user.role))
-                    
-                    navigate('/dashboard',result.data);
-                } else {
-                    navigate('/');
+    // ✅ Check token and navigate if valid
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                if (decoded?.role) {
+                    navigate("/dashboard");
                 }
-            })
-            .catch(err => console.log(err))
-    }
-// backgroundColor: "#d3d3d3"
+            } catch (err) {
+                localStorage.clear(); // Remove invalid token
+            }
+        }
+    }, [navigate]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const result = await axios.post("http://localhost:3001/auth/login", {
+                email,
+                password
+            });
+
+            if (result.data.message === "Success") {
+                const token = result.data.token;
+                const decoded = jwtDecode(token); // ✅ decode token if needed
+
+                localStorage.setItem("token", token);
+                localStorage.setItem("user", JSON.stringify(result.data.user));
+                localStorage.setItem("role", JSON.stringify(result.data.user.role));
+
+                navigate('/dashboard');
+            } else {
+                navigate('/');
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+        }
+    };
+
+
     return (
         <>
             <Container>

@@ -20,6 +20,7 @@ const style = {
 };
 
 const Users = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
     const [open, setOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [value, setValue] = useState(0);
@@ -44,7 +45,13 @@ const Users = () => {
 
     const getCourses = async () => {
         try {
-            const response = await axios.get("http://localhost:3001/courses/getAllCourses");
+            const response = await axios.get("http://localhost:3001/courses/getAllCourses",
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
+                });
             setCourses(response.data);
         } catch (err) {
             console.error("Error fetching courses:", err);
@@ -128,7 +135,13 @@ const Users = () => {
                 });
             } else {
                 // Add new user
-                await axios.post("http://localhost:3001/users/addNewUserByAdmin", formData);
+                await axios.post("http://localhost:3001/users/addNewUserByAdmin", formData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        }
+                    });
             }
 
             handleClose();
@@ -296,7 +309,7 @@ const Users = () => {
                 <Button onClick={handleAddNewUser} variant="contained">Add User</Button>
             </Box>
 
-            <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1100 }}>
+            <TableContainer component={Paper} sx={{ marginTop: 3, marginLeft: 15, minWidth: 1100 }}>
                 <Tabs value={value} onChange={handleTabChange}>
                     <Tab label="Teachers" {...a11yProps(0)} />
                     <Tab label="Students" {...a11yProps(1)} />

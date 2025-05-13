@@ -38,17 +38,35 @@ export default function EnrollmentPage() {
     }, []);
 
     const fetchEnrollments = async () => {
-        const response = await axios.get('http://localhost:3001/enrollments/getAllEnrollments');
+        const response = await axios.get('http://localhost:3001/enrollments/getAllEnrollments',
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+            });
         setEnrollments(response.data);
     };
 
     const fetchStudents = async () => {
-        const response = await axios.get('http://localhost:3001/users/getAllUserWithRoleStd');
+        const response = await axios.get('http://localhost:3001/users/getAllUserWithRoleStd',
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+            });
         setStudents(response.data);
     };
 
     const fetchCourses = async () => {
-        const response = await axios.get('http://localhost:3001/courses/all');
+        const response = await axios.get('http://localhost:3001/courses/all',
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+            });
         setCourses(response.data);
     };
 
@@ -88,11 +106,17 @@ export default function EnrollmentPage() {
                     {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                            'Content-Type': 'multipart/form-data',
+                            // 'Content-Type': 'multipart/form-data',
                         }
                     });
             } else {
-                await axios.post('http://localhost:3001/enrollments/addEnrollment', formData);
+                await axios.post('http://localhost:3001/enrollments/addEnrollment', formData,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        },
+                    });
             }
 
             handleClose();
@@ -181,7 +205,7 @@ export default function EnrollmentPage() {
             </Box>
 
             {/* Enrollment Table */}
-            <TableContainer component={Paper} sx={{ marginTop: 3, minWidth: 1100 }}>
+            <TableContainer component={Paper} sx={{ marginTop: 3,marginLeft: 15, minWidth: 1100 }}>
                 <Table>
                     <TableHead>
                         <TableRow>

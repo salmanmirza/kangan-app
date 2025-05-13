@@ -12,14 +12,7 @@ const register = async (req, res) => {
     try {
         const { fname, lname, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        //   const newUser =  new
         const newUser = new User({
-            // fName: fname,
-            // lName: lname,
-            // email: email,
-            // password: hashedPassword,
-            // role: "user" // default role for new users
 
             fname: fname,
             lname: lname,
@@ -29,9 +22,7 @@ const register = async (req, res) => {
                 enum: "admin" //user == student in our case for now/
             }
         })
-        // mongoose.insertOne(newUser);
         await newUser.save();
-        // const user = await User.create(newUser);
 
         res.status(201).json({ message: 'User registered successfully', newUser });
     } catch (error) {
@@ -51,38 +42,25 @@ const login = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found--invalid email" })
         }
-        const isMatch =  bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
+
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid password" });
         }
 
-        const token = jwt.sign({ email: user.email }, sercret, { expiresIn: '1h' });
+        const token = jwt.sign({ email: user.email, role: user.role }, sercret, { expiresIn: '1h' });
 
         console.log(token);
         res.status(200).json({ message: "Success", "token": token, "user": user });
         if (!token) {
             return res.status(401).json({ message: "No token provided --access denied" });
-        } else {
-            return res.status(200).json({
-                'token': token,
-                'message': "Success",
-                'user': user
-            });
         }
+
+        return res.status(200).json({ message: "Success", token, user });
     } catch (error) {
         return res.status(500).json({ message: "Something went wrong on login" });
 
     }
 
-    // app.get('/login', function(req, res) {
-    // });
 }
-// module.exports = {
-//     register,
-//     login
-// }
-// export default {
-//     register,
-//     login
-// }
-export { register, login};
+export { register, login };

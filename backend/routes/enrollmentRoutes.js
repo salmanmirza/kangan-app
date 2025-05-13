@@ -4,11 +4,13 @@ import fs from 'fs-extra';
 import path from 'path';
 import Enrollment from '../models/enrollmentModel.js';
 import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
+import authorizedRoles from '../middlewares/roleMiddleware.js'; // Assuming you have a middleware for role authorization
+
 
 const router = express.Router();
 
 // 1. Get all enrollments
-router.get('/getAllEnrollments', async (req, res) => {
+router.get('/getAllEnrollments',verifyToken,authorizedRoles("admin"), async (req, res) => {
     try {
         const enrollments = await Enrollment.find()
             .populate('student', 'firstName lastName studentRollNo') // Populate student details
@@ -20,7 +22,7 @@ router.get('/getAllEnrollments', async (req, res) => {
 });
 
 // 2. Get enrollment by ID
-router.get('/getEnrollmentById/:id', async (req, res) => {
+router.get('/getEnrollmentById/:id',verifyToken,authorizedRoles("admin"), async (req, res) => {
     const { id } = req.params;
     try {
         const enrollment = await Enrollment.findById(id)
@@ -38,7 +40,7 @@ router.get('/getEnrollmentById/:id', async (req, res) => {
 });
 
 // 3. Add a new enrollment
-router.post('/addEnrollment', async (req, res) => {
+router.post('/addEnrollment',verifyToken,authorizedRoles("admin"), async (req, res) => {
     try {
         const { student, course, status } = req.body;
 
@@ -56,7 +58,7 @@ router.post('/addEnrollment', async (req, res) => {
 });
 
 // 4. Update enrollment by ID
-router.put('/updateEnrollmentById', async (req, res) => {
+router.put('/updateEnrollmentById',verifyToken,authorizedRoles("admin"), async (req, res) => {
     const { _id, student, course, status } = req.body;
 
     try {
@@ -79,7 +81,7 @@ router.put('/updateEnrollmentById', async (req, res) => {
 });
 
 // 5. Delete enrollment by ID
-router.delete('/deleteEnrollmentById', async (req, res) => {
+router.delete('/deleteEnrollmentById',verifyToken,authorizedRoles("admin"), async (req, res) => {
     const { id } = req.body;
 
     try {

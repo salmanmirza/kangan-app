@@ -4,10 +4,11 @@ import Course from '../models/coursesModel.js';
 import Assignment from '../models/assignmentModel.js';
 import Enrollment from '../models/enrollmentModel.js';
 import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
+import authorizedRoles from '../middlewares/roleMiddleware.js'; // Assuming you have a middleware for role authorization  
 
 const router = express.Router();
 
-router.get('/dashboardStats', async (req, res) => {
+router.get('/dashboardStats',verifyToken,authorizedRoles("admin","teacher","student"), async (req, res) => {
   const { role, teacherId } = req.query;
 
   if (!role) {

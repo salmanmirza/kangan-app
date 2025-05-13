@@ -6,6 +6,7 @@ import path from 'path';
 import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
 import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have a middleware for token verification
+import authorizedRoles from '../middlewares/roleMiddleware.js'; // Assuming you have a middleware for role authorization
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Route to handle adding a new course
-router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) => {
+router.post('/addNewCourseByAdmin',verifyToken,authorizedRoles("admin"), upload.single('imgPath'), async (req, res) => {
     try {
         console.log(req.body);
         const { courseName, description, teacherId } = req.body; // Added teacherId
@@ -62,7 +63,7 @@ router.post('/addNewCourseByAdmin', upload.single('imgPath'), async (req, res) =
 
 // getCoursesForTeacher
 // GET /courses/getCoursesForTeacher?teacherId=xxxxx
-router.get('/getCoursesForTeacher', async (req, res) => {
+router.get('/getCoursesForTeacher',verifyToken,authorizedRoles("admin"), async (req, res) => {
     try {
         const { teacherId } = req.query;
 
@@ -87,7 +88,7 @@ router.get('/getCoursesForTeacher', async (req, res) => {
 
 
 // Get all courses
-router.get('/getAllCourses', async (req, res) => {
+router.get('/getAllCourses',verifyToken,authorizedRoles("admin","teacher"), async (req, res) => {
     try {
         const courses = await Course.find().sort({ createdAt: -1 }).populate('teacher').populate('students');
         res.status(200).json(courses);
@@ -98,7 +99,7 @@ router.get('/getAllCourses', async (req, res) => {
 });
 
 // Delete course by ID
-router.delete('/deleteCourseByIdByAdmin', async (req, res) => {
+router.delete('/deleteCourseByIdByAdmin',verifyToken,authorizedRoles("admin"), async (req, res) => {
     try {
         const { _id } = req.body;
 
@@ -145,7 +146,7 @@ router.delete('/deleteCourseByIdByAdmin', async (req, res) => {
 });
 
 // Update course by ID
-router.put('/updateCourseByIdByAdmin', upload.single('imgPath'), async (req, res) => {
+router.put('/updateCourseByIdByAdmin',verifyToken,authorizedRoles("admin"), upload.single('imgPath'), async (req, res) => {
     try {
         const { _id, courseName, description, teacherId } = req.body;
 
@@ -216,7 +217,7 @@ router.get('/all', async (req, res) => {
 
 // Differentiate the courses based on signed-in user role
 
-router.get('/getCoursesByRole', async (req, res) => {
+router.get('/getCoursesByRole',verifyToken,authorizedRoles("admin","teacher","student"), async (req, res) => {
     const { _id } = req.query; // Get user ID from query string
 
     try {

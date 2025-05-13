@@ -6,10 +6,11 @@ import bcrypt from 'bcrypt';
 import Course from '../models/coursesModel.js';
 import User from '../models/userModel.js';
 import verifyToken from '../middlewares/authMiddleware.js';
+import authorizedRoles from '../middlewares/roleMiddleware.js';
 
 const router = express.Router();
 
-router.get('/admin', async (req, res) => {
+router.get('/admin',verifyToken,authorizedRoles("admin","teacher"), async (req, res) => {
     try {
         const userData = await User.find()
             .populate('courses')  // Populate courses for students (array of courses)
@@ -26,7 +27,7 @@ router.get('/admin', async (req, res) => {
 
 
 // Delete user by ID (Admin only)
-router.delete('/deleteById', async (req, res) => {
+router.delete('/deleteById',verifyToken,authorizedRoles("admin"), async (req, res) => {
     const { _id } = req.body;
     if (!_id) {
         return res.status(400).json({ message: 'User ID is required' });
@@ -47,7 +48,7 @@ router.delete('/deleteById', async (req, res) => {
 });
 
 // Update user by ID (Admin only)
-router.put('/updateUserByIdByAdmin', async (req, res) => {
+router.put('/updateUserByIdByAdmin',verifyToken,authorizedRoles("admin"), async (req, res) => {
     const {
         _id,
         firstName,
@@ -104,7 +105,7 @@ router.put('/updateUserByIdByAdmin', async (req, res) => {
     }
 });
 // Add new user by admin
-router.post('/addNewUserByAdmin', async (req, res) => {
+router.post('/addNewUserByAdmin',verifyToken,authorizedRoles("admin"), async (req, res) => {
     try {
         const {
             firstName,
@@ -172,7 +173,7 @@ router.get('/getAllUserWithRoleStd', async (req, res) => {
 });
 
 
-router.get('/totalEnrolledStds', async (req, res) => {
+router.get('/totalEnrolledStds',verifyToken,authorizedRoles("teacher"), async (req, res) => {
     try {
         const { teacherId } = req.query; // Assuming req.user is populated via auth middleware
 
