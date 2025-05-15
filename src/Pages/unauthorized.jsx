@@ -2,8 +2,8 @@ import React from 'react';
 
 const UnauthorizedPage = () => {
   return (
-    <div style={{ textAlign: 'center', padding: '4rem' }}>
-      <h1 style={{ fontSize: '2rem', color: '#d9534f' }}>🚫 Unauthorized Access</h1>
+    <div style={{ textAlign: 'cen`ter', padding: '4rem' }}>
+      <h1 style={{ fontSize: '2rem', color: '#e80202' }}>🚫 Unauthorized Access</h1>
       <p style={{ fontSize: '1.2rem' }}>
         You do not have permission to view this page.
       </p>
