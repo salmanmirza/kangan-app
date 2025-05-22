@@ -1,18 +1,24 @@
+// src/pages/dashboard/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { Box, CssBaseline, Typography, Grid, Card, CardContent } from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 import NavBar from '../../components/navBar';
 import axios from 'axios';
-import StudentTodoSimpleCard from '../../components/toDoList';
+import StudentQuestionTodo from '../../components/toDoList';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-<NotificationsIcon fontSize="small" sx={{ mr: 1 }} />
+import ChatBot from '../../components/ChatBot';
 
 export default function Dashboard() {
   const location = useLocation();
   const isRootDashboard = location.pathname.replace(/\/+$/, '') === '/dashboard';
+  const [questions, setQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [completedIds, setCompletedIds] = useState(new Set());
 
   const user = JSON.parse(localStorage.getItem('user'));
   const role = user?.role || null;
+  const courseId = user?.course || user.courses || null;
+  const userId = user?._id || null;
 
   const [stats, setStats] = useState({
     coursesCount: 0,
@@ -43,17 +49,16 @@ export default function Dashboard() {
 
   // ✅ useEffect: Fetch dashboard stats conditionally
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!user?._id || !role || !isRootDashboard) return;
+    if (!user?._id || !role || !isRootDashboard) return;
 
+    const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const params = { role, userId: user._id };
+        const params = { role, userId: user._id, courseId: user.courses || user.course };
 
         if (role === 'teacher') {
           params.teacherId = user._id;
 
-          // Fetch assignments and courses in parallel
           const [assignmentRes, coursesRes] = await Promise.all([
             axios.get('http://localhost:3001/dashboard/dashboardStats', {
               params,
@@ -64,7 +69,6 @@ export default function Dashboard() {
             }),
           ]);
 
-          // ✅ Only fetch student count for teachers
           const totalEnrolledStudents = await fetchEnrolledStudents(user._id, token);
 
           setStats({
@@ -72,8 +76,8 @@ export default function Dashboard() {
             assignmentsCount: assignmentRes.data.totalAssignments || 0,
             studentsCount: totalEnrolledStudents,
           });
-        } else if (role === 'admin') { // || role === 'student'
-          const res = await axios.get('http://localhost:3001/dashboard/dashboardStats' , {
+        } else if (role === 'admin') {
+          const res = await axios.get('http://localhost:3001/dashboard/dashboardStats', {
             params,
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -81,14 +85,77 @@ export default function Dashboard() {
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
-        setError('Failed to load stats.' );
+        setError('Failed to load stats.');
       } finally {
         setLoading(false);
       }
     };
 
+    // Student section - updated for todo list functionality
+    if (role === 'student') {
+      setQuestionsLoading(true);
+      
+      // Fix parameter naming to match what the server expects
+      const params = { userId };
+      if (Array.isArray(courseId)) {
+        params['courseId[]'] = courseId;
+      } else if (courseId) {
+        params['courseId[]'] = courseId;
+      }
+      
+      axios.get('http://localhost:3001/questions/questions', { params })
+        .then(res => {
+          setQuestions(res.data.questions || []);
+          
+          // Create a Set from completed questions
+          if (res.data.completedIds) {
+            setCompletedIds(new Set(res.data.completedIds));
+          } else {
+            // Fallback if completedIds not provided directly
+            const completed = new Set(
+              (res.data.questions || [])
+                .filter(q => q.completed)
+                .map(q => q.id)
+            );
+            setCompletedIds(completed);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching questions:', err);
+          setQuestions([]);
+          setCompletedIds(new Set());
+        })
+        .finally(() => setQuestionsLoading(false));
+    }
+
     fetchStats();
-  }, [isRootDashboard, role, user?._id]);
+  }, [isRootDashboard]);
+
+  // Question completion handler for student todo list
+  async function handleCheck(questionId) {
+    if (questionsLoading || completedIds.has(questionId)) return;
+    
+    try {
+      // Optimistically update UI
+      setCompletedIds(prev => new Set([...prev, questionId]));
+      
+      // Send request to mark question complete
+      await axios.post('http://localhost:3001/questions/complete', { 
+        userId, 
+        courseId, 
+        questionId 
+      });
+      
+    } catch (error) {
+      console.error('Failed to mark question complete:', error);
+      // Revert UI on error
+      setCompletedIds(prev => {
+        const newSet = new Set([...prev]);
+        newSet.delete(questionId);
+        return newSet;
+      });
+    }
+  }
 
   // ✅ Dashboard content renderer
   const renderContent = () => {
@@ -117,8 +184,15 @@ export default function Dashboard() {
 
     if (role === 'student') {
       return (
-        <Grid item xs={12}>
-          <StudentTodoSimpleCard />
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <StudentQuestionTodo 
+              questions={questions}
+              questionsLoading={questionsLoading}
+              completedIds={completedIds}
+              onQuestionCheck={handleCheck}
+            />
+          </Grid>
         </Grid>
       );
     }
@@ -131,7 +205,6 @@ export default function Dashboard() {
       <CssBaseline />
       <NavBar />
       <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
         {isRootDashboard && (
           <>
             <Typography variant="h4" gutterBottom>
@@ -142,6 +215,7 @@ export default function Dashboard() {
         )}
         <Outlet />
       </Box>
+      <ChatBot />
     </Box>
   );
 }
