@@ -25,4 +25,7 @@ backend/uploads/*
 *.njsproj
 *.sln
 *.sw?
+# Environment variables
+env.js
+.env
 
