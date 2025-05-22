@@ -26,6 +26,5 @@ backend/uploads/*
 *.sln
 *.sw?
 # Environment variables
-env.js
 .env
 
