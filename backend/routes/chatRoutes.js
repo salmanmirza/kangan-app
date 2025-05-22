@@ -15,6 +15,7 @@ const openai = new OpenAI({
 
 router.post('/', async (req, res) => {
     try {
+        //retrieving the message and userId from the request body
         const { message, userId } = req.body;
 
         if (!message) {
