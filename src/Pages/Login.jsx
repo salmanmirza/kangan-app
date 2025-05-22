@@ -19,6 +19,8 @@ export default function Login() {
             try {
                 const decoded = jwtDecode(token);
                 if (decoded?.role) {
+                    //navigating to dashboard of users
+                    
                     navigate("/dashboard");
                 }
             } catch (err) {
