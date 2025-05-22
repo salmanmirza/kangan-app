@@ -16,7 +16,7 @@ import assignmentRoutes from './routes/assignmentRoutes.js';
 import enrollmentsRoutes from "./routes/enrollmentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js"
 import QuestionRoutes from './routes/QuestionRoutes.js';
-import chatRoutes from './routes/chat.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 app.use(express.json());
