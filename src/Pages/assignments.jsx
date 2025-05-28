@@ -23,7 +23,7 @@ export default function Assignments() {
     const [assignments, setAssignments] = useState([]);
     const [courses, setCourses] = useState([]);
     const [userRole, setUserRole] = useState('');
-    const [teachers, setTeachers] = useState([]); // State for teachers
+    const [teachers, setTeachers] = useState([]);
     const [formData, setFormData] = useState({
         _id: '',
         title: '',
@@ -35,303 +35,220 @@ export default function Assignments() {
         dueDate: ''
     });
 
-    // Fetch assignments, courses, and teachers when component mounts
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.role) {
-            setUserRole(user.role);
-        }
+        if (user && user.role) setUserRole(user.role);
         fetchAssignments();
         getCourses();
-        getTeachers(); // Fetch teachers
+        getTeachers();
     }, []);
 
-    // Fetch courses from the backend
     const getCourses = async () => {
         try {
             const response = await axios.get("http://localhost:3001/courses/getAllCourses", {
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 },
             });
-            setCourses(response.data); // Correctly placed inside try
+            setCourses(response.data);
         } catch (err) {
             console.error("Error fetching courses:", err);
         }
     };
-    
-// fetch all the courses in which teacher is tutoring
 
+    const getTeachers = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/users/getAllTeachers");
+            setTeachers(response.data);
+        } catch (err) {
+            console.error("Error fetching teachers:", err);
+        }
+    };
 
-// Fetch teachers from the backend
-const getTeachers = async () => {
-    try {
-        const response = await axios.get("http://localhost:3001/users/getAllTeachers");
-        setTeachers(response.data);
-    } catch (err) {
-        console.error("Error fetching teachers:", err);
-    }
-};
+    const fetchAssignments = async () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) return console.error("User not found in localStorage.");
 
-// Fetch all assignments
-const fetchAssignments = async () => {
-    const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
-    const teacherId = user._id;
-    console.log(user.role);
-    console.log(teacherId);
-    if (!user) {
-        console.error("User not found in localStorage.");
-        return;
-    }
+        try {
+            const response = await axios.get('http://localhost:3001/assignments/getAssignmentsByRole', {
+                headers: { Authorization: `Bearer ${user.token}` },
+                params: { role: user.role, Id: user._id }
+            });
+            setAssignments(response.data);
+        } catch (error) {
+            console.error("Error fetching assignments:", error);
+        }
+    };
 
-    try {
-        // Pass the role as a query parameter along with the Authorization token
-        const response = await axios.get('http://localhost:3001/assignments/getAssignmentsByRole', {
-            headers: { Authorization: `Bearer ${user.token}` }, // Assuming token is passed for auth
-            params: { role: user.role, Id: user._id }  // Pass the role as a query parameter
+    const handleOpen = () => {
+        setFormData({
+            _id: '',
+            title: '',
+            description: '',
+            course: '',
+            teacher: '',
+            assignmentNo: '',
+            assignmentFile: '',
+            dueDate: ''
         });
-        setAssignments(response.data);
-    } catch (error) {
-        console.error("Error fetching assignments:", error);
-    }
-};
+        setIsEditMode(false);
+        setOpen(true);
+    };
 
+    const handleEdit = (assignment) => {
+        const formattedDate = new Date(assignment.dueDate).toISOString().split('T')[0];
+        setFormData({
+            _id: assignment._id,
+            title: assignment.title,
+            description: assignment.description,
+            course: assignment.course._id,
+            teacher: assignment.teacher._id,
+            assignmentNo: assignment.assignmentNo,
+            assignmentFile: '', // Clear file field during edit
+            dueDate: formattedDate
+        });
+        setIsEditMode(true);
+        setOpen(true);
+    };
 
-// Open modal for adding a new assignment
-const handleOpen = () => {
-    setFormData({
-        title: '',
-        description: '',
-        course: '',
-        teacher: '',
-        assignmentNo: '',
-        assignmentFile: '',
-        dueDate: ''
-    });
-    setIsEditMode(false);
-    setOpen(true);
-};
+    const handleClose = () => setOpen(false);
 
-// Open modal for editing an existing assignment
-const handleEdit = (assignment) => {
-    const formattedDate = new Date(assignment.dueDate).toISOString().split('T')[0];
-    setFormData({
-        _id: assignment._id,
-        title: assignment.title,
-        description: assignment.description,
-        course: assignment.course._id, // Assuming `course` is populated and contains _id
-        teacher: assignment.teacher._id, // Assuming `teacher` is populated and contains _id
-        assignmentNo: assignment.assignmentNo,
-        assignmentFile: assignment.assignmentFile,
-        dueDate: formattedDate
-    });
-    setIsEditMode(true);
-    setOpen(true);
-};
+    const handleChange = (e) => {
+        const { name, value, files } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: files ? files[0] : value
+        }));
+    };
 
-// Close the modal
-const handleClose = () => setOpen(false);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const form = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value) form.append(key, value);
+        });
 
-// Handle form field change
-const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData(prev => ({
-        ...prev,
-        [name]: files ? files[0] : value
-    }));
-};
+        try {
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            };
 
-// Submit form to add or update an assignment
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = new FormData();
-    form.append('title', formData.title);
-    form.append('description', formData.description);
-    form.append('course', formData.course);
-    form.append('teacher', formData.teacher);
-    form.append('assignmentNo', formData.assignmentNo);
-    form.append('dueDate', formData.dueDate);
-    form.append('assignmentFile', formData.assignmentFile);
-    form.append('id', formData._id); // Include the ID in the form data if editing
+            if (isEditMode) {
+                await axios.put('http://localhost:3001/assignments/updateAssignmentById', form, config);
+            } else {
+                await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form, config);
+            }
 
-    try {
-        if (isEditMode) {
-            await axios.put('http://localhost:3001/assignments/updateAssignmentById', form,
-                {
+            handleClose();
+            fetchAssignments();
+        } catch (error) {
+            console.error('Error in form submission:', error);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (userRole === 'student') return;
+        if (window.confirm('Do you want to delete this assignment?')) {
+            try {
+                await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', {
+                    data: { id },
                     headers: {
-                        'Content-Type': 'application/json',
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     }
-                }
-            );
-
-        } else {
-            await axios.post('http://localhost:3001/assignments/addAssignmentByTeacher', form, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                } // Assuming token is passed for auth   
-            });
+                });
+                fetchAssignments();
+            } catch (err) {
+                console.error("Error deleting assignment:", err);
+            }
         }
+    };
 
-        handleClose();
-        fetchAssignments();
-    } catch (error) {
-        console.error('Error in form submission:', error);
-    }
-};
+    return (
+        <Box>
+            <Modal open={open} onClose={handleClose}>
+                <Box sx={style} component="form" onSubmit={handleSubmit}>
+                    <Typography variant="h6">{isEditMode ? 'Edit Assignment' : 'Add Assignment'}</Typography>
+                    <Stack spacing={2} mt={2}>
+                        <TextField name="title" label="Title" value={formData.title} onChange={handleChange} fullWidth />
+                        <TextField name="description" label="Description" value={formData.description} onChange={handleChange} fullWidth />
+                        <TextField name="assignmentNo" label="Assignment No" type="number" value={formData.assignmentNo} onChange={handleChange} fullWidth />
+                        <TextField name="dueDate" label="Due Date" type="date" value={formData.dueDate} onChange={handleChange} InputLabelProps={{ shrink: true }} fullWidth />
+                        <FormControl fullWidth>
+                            <InputLabel>Course</InputLabel>
+                            <Select name="course" value={formData.course} onChange={handleChange} label="Course">
+                                <MenuItem value="">Select a Course</MenuItem>
+                                {courses.map((course) => (
+                                    <MenuItem key={course._id} value={course._id}>{course.courseName}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl fullWidth>
+                            <InputLabel>Teacher</InputLabel>
+                            <Select name="teacher" value={formData.teacher} onChange={handleChange} label="Teacher">
+                                <MenuItem value="">Select a Teacher</MenuItem>
+                                {teachers.map((teacher) => (
+                                    <MenuItem key={teacher._id} value={teacher._id}>{teacher.firstName} {teacher.lastName}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button variant="outlined" component="label">
+                            {formData.assignmentFile?.name || 'Attach File'}
+                            <input hidden type="file" name="assignmentFile" onChange={handleChange} />
+                        </Button>
+                        <Button variant="contained" type="submit">{isEditMode ? 'Update' : 'Add'}</Button>
+                    </Stack>
+                </Box>
+            </Modal>
 
-// Delete an assignment
-const handleDelete = async (id) => {
-    if (userRole === 'student') return; // Prevent student from deleting
-    if (window.confirm('Do you want to delete this assignment?')) {
-        const data = { id };
-        await axios.delete('http://localhost:3001/assignments/deleteAssignmentById', {
-            data,
+            {userRole !== 'student' && (
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
+                </Box>
+            )}
 
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-        });
-        fetchAssignments();
-    }
-};
-
-return (
-    <Box>
-        <Modal open={open} onClose={handleClose}>
-            <Box sx={style} component="form" onSubmit={handleSubmit}>
-                <Typography variant="h6">{isEditMode ? 'Edit Assignment' : 'Add Assignment'}</Typography>
-                <Stack spacing={2} mt={2}>
-                    <TextField
-                        name="title"
-                        label="Title"
-                        type="text"
-                        value={formData.title}
-                        onChange={handleChange}
-                        fullWidth
-                    />
-                    <TextField
-                        name="description"
-                        label="Description"
-                        type="text"
-                        value={formData.description}
-                        onChange={handleChange}
-                        fullWidth
-                    />
-                    <TextField
-                        name="assignmentNo"
-                        label="Assignment No"
-                        type="number"
-                        value={formData.assignmentNo}
-                        onChange={handleChange}
-                        fullWidth
-                    />
-                    <TextField
-                        name="dueDate"
-                        label="Due Date"
-                        type="date"
-                        value={formData.dueDate}
-                        onChange={handleChange}
-                        InputLabelProps={{ shrink: true }}
-                        fullWidth
-                    />
-                    {/* Course Dropdown */}
-                    <FormControl fullWidth>
-                        <InputLabel>Course</InputLabel>
-                        <Select
-                            name="course"
-                            value={formData.course || ''}
-                            onChange={handleChange}
-                            label="Course"
-                        >
-                            <MenuItem value="">Select a Course</MenuItem>
-                            {courses.map((course) => (
-                                <MenuItem key={course._id} value={course._id}>
-                                    {course.courseName}  {/* Display course name */}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    {/* Teacher Dropdown */}
-                    <FormControl fullWidth>
-                        <InputLabel>Teacher</InputLabel>
-                        <Select
-                            name="teacher"
-                            value={formData.teacher || ''}
-                            onChange={handleChange}
-                            label="Teacher"
-                        >
-                            <MenuItem value="">Select a Teacher</MenuItem>
-                            {teachers.map((teacher) => (
-                                <MenuItem key={teacher._id} value={teacher._id}>
-                                    {teacher.firstName} {teacher.lastName}  {/* Concatenate first and last names */}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <Button variant="outlined" component="label">
-                        Attach File
-                        <input hidden type="file" name="assignmentFile" onChange={handleChange} />
-                    </Button>
-                    <Button variant="contained" type="submit">
-                        {isEditMode ? 'Update' : 'Add'}
-                    </Button>
-                </Stack>
-            </Box>
-        </Modal>
-
-        {/* Conditionally render Add button */}
-        {userRole !== 'student' && (
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button onClick={handleOpen} variant="contained">Add Assignment</Button>
-            </Box>
-        )}
-
-        <TableContainer component={Paper} sx={{ marginTop: 3, marginLeft: 15, minWidth: 1200 }}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Title</TableCell>
-                        <TableCell>Description</TableCell>
-                        <TableCell>Assignment No</TableCell>
-                        <TableCell>Course</TableCell>
-                        <TableCell>Teacher</TableCell>
-                        <TableCell>Due Date</TableCell>
-                        <TableCell>File</TableCell>
-                        {userRole !== 'student' && <TableCell>Actions</TableCell>}
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {assignments.map((assignment) => (
-                        <TableRow key={assignment._id}>
-                            <TableCell>{assignment.title}</TableCell>
-                            <TableCell>{assignment.description}</TableCell>
-                            <TableCell>{assignment.assignmentNo}</TableCell>
-                            <TableCell>{assignment.course?.courseName || 'N/A'}</TableCell>
-                            <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
-                            <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                                <a
-                                    href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`}
-                                    download
-                                    rel="noopener noreferrer"
-                                >
-                                    Assignment File
-                                </a>
-                            </TableCell>
-                            <TableCell>
+            <TableContainer component={Paper} sx={{ marginTop: 3, marginLeft: 15, minWidth: 1200 }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Title</TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Assignment No</TableCell>
+                            <TableCell>Course</TableCell>
+                            <TableCell>Teacher</TableCell>
+                            <TableCell>Due Date</TableCell>
+                            <TableCell>File</TableCell>
+                            {userRole !== 'student' && <TableCell>Actions</TableCell>}
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {assignments.map((assignment) => (
+                            <TableRow key={assignment._id}>
+                                <TableCell>{assignment.title}</TableCell>
+                                <TableCell>{assignment.description}</TableCell>
+                                <TableCell>{assignment.assignmentNo}</TableCell>
+                                <TableCell>{assignment.course?.courseName || 'N/A'}</TableCell>
+                                <TableCell>{assignment.teacher?.firstName + ' ' + assignment.teacher?.lastName || 'N/A'}</TableCell>
+                                <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                    {assignment.assignmentFile ? (
+                                        <a href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`} download rel="noopener noreferrer">Download File</a>
+                                    ) : (
+                                        <Typography variant="body2" color="textSecondary">No file</Typography>
+                                    )}
+                                </TableCell>
                                 {userRole !== 'student' && (
-                                    <>
+                                    <TableCell>
                                         <Button variant="contained" color="info" onClick={() => handleEdit(assignment)}>Edit</Button> |
                                         <Button variant="contained" color="error" onClick={() => handleDelete(assignment._id)}>Delete</Button>
-                                    </>
+                                    </TableCell>
                                 )}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-    </Box>
-);
-    }
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Box>
+    );
+}
