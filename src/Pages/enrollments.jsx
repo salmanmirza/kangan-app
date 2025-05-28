@@ -5,16 +5,16 @@ import {
     TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody,
 } from '@mui/material';
 
-const style = {
+const modalStyle = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
     width: 600,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 4,
+    boxShadow: 24,
     p: 4,
+    borderRadius: 2,
 };
 
 export default function EnrollmentPage() {
@@ -27,10 +27,9 @@ export default function EnrollmentPage() {
         _id: '',
         student: '',
         course: '',
-        status: 'enrolled', // Default status
+        status: 'enrolled',
     });
 
-    // Fetch Enrollments, Students, and Courses
     useEffect(() => {
         fetchEnrollments();
         fetchStudents();
@@ -38,35 +37,29 @@ export default function EnrollmentPage() {
     }, []);
 
     const fetchEnrollments = async () => {
-        const response = await axios.get('http://localhost:3001/enrollments/getAllEnrollments',
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                },
-            });
+        const response = await axios.get('http://localhost:3001/enrollments/getAllEnrollments', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
         setEnrollments(response.data);
     };
 
     const fetchStudents = async () => {
-        const response = await axios.get('http://localhost:3001/users/getAllUserWithRoleStd',
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                },
-            });
+        const response = await axios.get('http://localhost:3001/users/getAllUserWithRoleStd', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
         setStudents(response.data);
     };
 
     const fetchCourses = async () => {
-        const response = await axios.get('http://localhost:3001/courses/all',
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                },
-            });
+        const response = await axios.get('http://localhost:3001/courses/all', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
         setCourses(response.data);
     };
 
@@ -79,8 +72,8 @@ export default function EnrollmentPage() {
     const handleEdit = (enrollment) => {
         setFormData({
             _id: enrollment._id,
-            student: enrollment.student._id, // Assuming student is an object
-            course: enrollment.course._id, // Assuming course is an object
+            student: enrollment.student._id,
+            course: enrollment.course._id,
             status: enrollment.status,
         });
         setIsEditMode(true);
@@ -91,9 +84,9 @@ export default function EnrollmentPage() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
 
@@ -102,23 +95,19 @@ export default function EnrollmentPage() {
 
         try {
             if (isEditMode) {
-                await axios.put('http://localhost:3001/enrollments/updateEnrollmentById', formData,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                            // 'Content-Type': 'multipart/form-data',
-                        }
-                    });
+                await axios.put('http://localhost:3001/enrollments/updateEnrollmentById', formData, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
             } else {
-                await axios.post('http://localhost:3001/enrollments/addEnrollment', formData,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem("token")}`
-                        },
-                    });
+                await axios.post('http://localhost:3001/enrollments/addEnrollment', formData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
             }
-
             handleClose();
             fetchEnrollments();
         } catch (error) {
@@ -128,108 +117,159 @@ export default function EnrollmentPage() {
 
     const handleDelete = async (id) => {
         if (window.confirm('Do you want to delete this enrollment?')) {
-            const data = { id };
-            const url = 'http://localhost:3001/enrollments/deleteEnrollmentById';
-            await axios.delete(url, { data });
+            await axios.delete('http://localhost:3001/enrollments/deleteEnrollmentById', {
+                data: { id },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
             fetchEnrollments();
         }
     };
 
     return (
-        <Box>
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={style} component="form" onSubmit={handleSubmit}>
-                    <Typography variant="h6">{isEditMode ? 'Edit Enrollment' : 'Add Enrollment'}</Typography>
-                    <Stack spacing={2} mt={2}>
-                        {/* Student Dropdown */}
-                        <TextField
-                            name="student"
-                            label="RollNo--Student"
-                            select
-                            value={formData.student}
-                            onChange={handleChange}
-                            fullWidth
-                            SelectProps={{ native: true }}
-                        >
-                            <option value="">Select a student</option>
-                            {students.map((student) => (
-                                <option key={student._id} value={student._id}>
-                                    {student.studentRollNo} — {student.firstName} {student.lastName}
-                                </option>
-                            ))}
-                        </TextField>
-
-                        {/* Course Dropdown */}
-                        <TextField
-                            name="course"
-                            label="Course"
-                            select
-                            value={formData.course}
-                            onChange={handleChange}
-                            fullWidth
-                            SelectProps={{ native: true }}
-                        >
-                            <option value="">Select a course</option>
-                            {courses.map((course) => (
-                                <option key={course._id} value={course._id}>
-                                    {course.courseName}
-                                </option>
-                            ))}
-                        </TextField>
-
-                        {/* Status Dropdown */}
-                        <TextField
-                            name="status"
-                            label="Status"
-                            select
-                            value={formData.status}
-                            onChange={handleChange}
-                            fullWidth
-                            SelectProps={{ native: true }}
-                        >
-                            <option value="enrolled">Enrolled</option>
-                            <option value="completed">Completed</option>
-                            <option value="dropped">Dropped</option>
-                        </TextField>
-
-                        <Button variant="contained" type="submit">
-                            {isEditMode ? 'Update' : 'Add'}
-                        </Button>
-                    </Stack>
+        <Box
+            sx={{
+                px: 3,
+                pt: '80px', // space for navbar height
+                minHeight: 'calc(100vh - 80px)',
+                bgcolor: '#f9fafb', // dashboard background color
+            }}
+        >
+            <Box
+                sx={{
+                    maxWidth: 1200,
+                    mx: 'auto',
+                    bgcolor: 'white',
+                    p: 3,
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    minHeight: 'calc(100vh - 140px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                {/* Add Enrollment Button */}
+                <Box display="flex" justifyContent="flex-end" mb={2}>
+                    <Button variant="contained" onClick={handleOpen}>
+                        Add Enrollment
+                    </Button>
                 </Box>
-            </Modal>
 
-            {/* Add Enrollment Button */}
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button onClick={handleOpen} variant="contained">Add Enrollment</Button>
-            </Box>
-
-            {/* Enrollment Table */}
-            <TableContainer component={Paper} sx={{ marginTop: 3,marginLeft: 15, minWidth: 1100 }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>RN--Student</TableCell>
-                            <TableCell>Course</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {enrollments.map((enrollment) => (
-                            <TableRow key={enrollment._id}>
-                                <TableCell>{enrollment.student?.studentRollNo} — {enrollment.student?.firstName} {enrollment.student?.lastName}</TableCell>
-                                <TableCell>{enrollment.course?.courseName}</TableCell>
-                                <TableCell>{enrollment.status}</TableCell>
-                                <TableCell>
-                                    <Button variant="contained" color="info" onClick={() => handleEdit(enrollment)}>Edit</Button> |
-                                    <Button variant="contained" color="error" onClick={() => handleDelete(enrollment._id)}>Delete</Button>
-                                </TableCell>
+                {/* Enrollment Table */}
+                <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ minWidth: 300 }}>RN -- Student</TableCell>
+                                <TableCell sx={{ minWidth: 200 }}>Course</TableCell>
+                                <TableCell sx={{ minWidth: 120 }}>Status</TableCell>
+                                <TableCell sx={{ minWidth: 280 }}>Actions</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {enrollments.map((enrollment) => (
+                                <TableRow key={enrollment._id} hover>
+                                    <TableCell>
+                                        {enrollment.student?.studentRollNo} — {enrollment.student?.firstName}{' '}
+                                        {enrollment.student?.lastName}
+                                    </TableCell>
+                                    <TableCell>{enrollment.course?.courseName}</TableCell>
+                                    <TableCell>{enrollment.status}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="contained"
+                                            color="info"
+                                            size="small"
+                                            sx={{ mr: 1 }}
+                                            onClick={() => handleEdit(enrollment)}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            size="small"
+                                            onClick={() => handleDelete(enrollment._id)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+                {/* Modal for Add/Edit */}
+                <Modal open={open} onClose={handleClose}>
+                    <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+                        <Typography variant="h6" mb={2}>
+                            {isEditMode ? 'Edit Enrollment' : 'Add Enrollment'}
+                        </Typography>
+
+                        <Stack spacing={2}>
+                            {/* Student Dropdown */}
+                            <TextField
+                                name="student"
+                                label="RollNo--Student"
+                                select
+                                value={formData.student}
+                                onChange={handleChange}
+                                fullWidth
+                                SelectProps={{ native: true }}
+                                required
+                            >
+                                <option value="">Select a student</option>
+                                {students.map((student) => (
+                                    <option key={student._id} value={student._id}>
+                                        {student.studentRollNo} — {student.firstName} {student.lastName}
+                                    </option>
+                                ))}
+                            </TextField>
+
+                            {/* Course Dropdown */}
+                            <TextField
+                                name="course"
+                                label="Course"
+                                select
+                                value={formData.course}
+                                onChange={handleChange}
+                                fullWidth
+                                SelectProps={{ native: true }}
+                                required
+                            >
+                                <option value="">Select a course</option>
+                                {courses.map((course) => (
+                                    <option key={course._id} value={course._id}>
+                                        {course.courseName}
+                                    </option>
+                                ))}
+                            </TextField>
+
+                            {/* Status Dropdown */}
+                            <TextField
+                                name="status"
+                                label="Status"
+                                select
+                                value={formData.status}
+                                onChange={handleChange}
+                                fullWidth
+                                SelectProps={{ native: true }}
+                                required
+                            >
+                                <option value="enrolled">Enrolled</option>
+                                <option value="completed">Completed</option>
+                                <option value="dropped">Dropped</option>
+                            </TextField>
+
+                            <Button variant="contained" type="submit" fullWidth>
+                                {isEditMode ? 'Update' : 'Add'}
+                            </Button>
+                        </Stack>
+                    </Box>
+                </Modal>
+            </Box>
         </Box>
     );
-};
+}

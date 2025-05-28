@@ -1,19 +1,22 @@
-// src/pages/dashboard/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { Box, CssBaseline, Typography, Grid, Card, CardContent } from '@mui/material';
+import {
+  Box,
+  CssBaseline,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+} from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 import NavBar from '../../components/navBar';
 import axios from 'axios';
 import StudentQuestionTodo from '../../components/toDoList';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import UniversalChatBot from '../../components/universalChatBot';
 
 export default function Dashboard() {
   const location = useLocation();
   const isRootDashboard = location.pathname.replace(/\/+$/, '') === '/dashboard';
-  const [questions, setQuestions] = useState([]);
-  const [questionsLoading, setQuestionsLoading] = useState(true);
-  const [completedIds, setCompletedIds] = useState(new Set());
 
   const user = JSON.parse(localStorage.getItem('user'));
   const role = user?.role || null;
@@ -29,16 +32,15 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Function: Only for teachers — get total enrolled students
+  const [questions, setQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [completedIds, setCompletedIds] = useState(new Set());
+
   const fetchEnrolledStudents = async (userId, token) => {
     try {
       const response = await axios.get(
         `http://localhost:3001/users/totalEnrolledStds?teacherId=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data.studentCount || 0;
     } catch (err) {
@@ -47,29 +49,28 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ useEffect: Fetch dashboard stats conditionally
   useEffect(() => {
-    if (!user?._id || !role || !isRootDashboard) return;
+    if (!userId || !role || !isRootDashboard) return;
 
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const params = { role, userId: user._id, courseId: user.courses || user.course };
+        const params = { role, userId, courseId };
 
         if (role === 'teacher') {
-          params.teacherId = user._id;
+          params.teacherId = userId;
 
           const [assignmentRes, coursesRes] = await Promise.all([
             axios.get('http://localhost:3001/dashboard/dashboardStats', {
               params,
               headers: { Authorization: `Bearer ${token}` },
             }),
-            axios.get(`http://localhost:3001/courses/getCoursesByRole?_id=${user._id}`, {
+            axios.get(`http://localhost:3001/courses/getCoursesByRole?_id=${userId}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ]);
 
-          const totalEnrolledStudents = await fetchEnrolledStudents(user._id, token);
+          const totalEnrolledStudents = await fetchEnrolledStudents(userId, token);
 
           setStats({
             coursesCount: coursesRes.data.length || 0,
@@ -91,34 +92,19 @@ export default function Dashboard() {
       }
     };
 
-    // Student section - updated for todo list functionality
     if (role === 'student') {
       setQuestionsLoading(true);
-      
-      // Fix parameter naming to match what the server expects
       const params = { userId };
       if (Array.isArray(courseId)) {
         params['courseId[]'] = courseId;
       } else if (courseId) {
         params['courseId[]'] = courseId;
       }
-      
+
       axios.get('http://localhost:3001/questions/questions', { params })
         .then(res => {
           setQuestions(res.data.questions || []);
-          
-          // Create a Set from completed questions
-          if (res.data.completedIds) {
-            setCompletedIds(new Set(res.data.completedIds));
-          } else {
-            // Fallback if completedIds not provided directly
-            const completed = new Set(
-              (res.data.questions || [])
-                .filter(q => q.completed)
-                .map(q => q.id)
-            );
-            setCompletedIds(completed);
-          }
+          setCompletedIds(new Set(res.data.completedIds || []));
         })
         .catch(err => {
           console.error('Error fetching questions:', err);
@@ -131,83 +117,116 @@ export default function Dashboard() {
     fetchStats();
   }, [isRootDashboard]);
 
-  // Question completion handler for student todo list
-  async function handleCheck(questionId) {
+  const handleCheck = async (questionId) => {
     if (questionsLoading || completedIds.has(questionId)) return;
-    
+
     try {
-      // Optimistically update UI
       setCompletedIds(prev => new Set([...prev, questionId]));
-      
-      // Send request to mark question complete
-      await axios.post('http://localhost:3001/questions/complete', { 
-        userId, 
-        courseId, 
-        questionId 
+      await axios.post('http://localhost:3001/questions/complete', {
+        userId,
+        courseId,
+        questionId
       });
-      
-    } catch (error) {
-      console.error('Failed to mark question complete:', error);
-      // Revert UI on error
+    } catch (err) {
+      console.error('Failed to mark question complete:', err);
       setCompletedIds(prev => {
         const newSet = new Set([...prev]);
         newSet.delete(questionId);
         return newSet;
       });
     }
-  }
+  };
 
-  // ✅ Dashboard content renderer
   const renderContent = () => {
-    if (loading) return <Typography variant="h6">Loading....</Typography>;
-    if (error) return <Typography variant="h6" color="error">{error}</Typography>;
+    if (loading)
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+          <CircularProgress color="primary" size={50} />
+        </Box>
+      );
+    if (error)
+      return (
+        <Typography
+          variant="h6"
+          color="error"
+          sx={{ mt: 6, fontWeight: 600, textAlign: 'center' }}
+        >
+          {error}
+        </Typography>
+      );
+
+    let statItems = [];
 
     if (role === 'admin') {
-      return (
-        <Grid container spacing={3}>
-          <StatCard title="Total Courses" value={stats.courses} />
-          <StatCard title="Total Teachers" value={stats.teachers} />
-          <StatCard title="Total Students" value={stats.students} />
-        </Grid>
-      );
+      statItems = [
+        { title: 'Total Courses', value: stats.courses },
+        { title: 'Total Teachers', value: stats.teachers },
+        { title: 'Total Students', value: stats.students },
+      ];
+    } else if (role === 'teacher') {
+      statItems = [
+        { title: 'Courses Taught', value: stats.coursesCount },
+        { title: 'Students Enrolled', value: stats.studentsCount },
+        { title: 'Assignments Created', value: stats.assignmentsCount },
+      ];
     }
 
-    if (role === 'teacher') {
-      return (
-        <Grid container spacing={3}>
-          <StatCard title="Total Courses Taught" value={stats.coursesCount} />
-          <StatCard title="Total Students Enrolled" value={stats.studentsCount} />
-          <StatCard title="Total Assignments Created" value={stats.assignmentsCount} />
-        </Grid>
-      );
-    }
+    return (
+      <Grid container spacing={4}>
+        {statItems.map((item, idx) => (
+          <StatCard key={idx} title={item.title} value={item.value} />
+        ))}
 
-    if (role === 'student') {
-      return (
-        <Grid container spacing={3}>
+        {role === 'student' && (
           <Grid item xs={12}>
-            <StudentQuestionTodo 
+            <StudentQuestionTodo
               questions={questions}
               questionsLoading={questionsLoading}
               completedIds={completedIds}
               onQuestionCheck={handleCheck}
             />
           </Grid>
-        </Grid>
-      );
-    }
-
-    return <Typography>No dashboard AVAILABLE for your role.</Typography>;
+        )}
+      </Grid>
+    );
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        backgroundColor: '#f9fafb',
+        fontFamily: "'Inter', sans-serif",
+        color: '#2e3a59',
+      }}
+    >
       <CssBaseline />
       <NavBar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: { xs: 4, md: 6 },
+          maxWidth: 1100,
+          mx: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}
+      >
         {isRootDashboard && (
           <>
-            <Typography variant="h4" gutterBottom>
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 700,
+                mb: 5,
+                color: '#3b4252',
+                letterSpacing: '0.05em',
+              }}
+            >
               Dashboard Overview
             </Typography>
             {renderContent()}
@@ -220,14 +239,42 @@ export default function Dashboard() {
   );
 }
 
-// ✅ Reusable stat card component
 function StatCard({ title, value }) {
   return (
     <Grid item xs={12} sm={6} md={4}>
-      <Card sx={{ minHeight: 140 }}>
+      <Card
+        elevation={3}
+        sx={{
+          minHeight: 140,
+          borderRadius: 3,
+          backgroundColor: '#fff',
+          boxShadow:
+            '0 4px 10px rgba(100, 100, 111, 0.2)',
+          transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+          cursor: 'default',
+          '&:hover': {
+            transform: 'translateY(-6px)',
+            boxShadow:
+              '0 8px 20px rgba(100, 100, 111, 0.3)',
+          },
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: '#2e3a59',
+          fontWeight: 600,
+        }}
+      >
         <CardContent>
-          <Typography variant="h6">{title}</Typography>
-          <Typography variant="h4">{value}</Typography>
+          <Typography
+            variant="h6"
+            sx={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}
+          >
+            {title}
+          </Typography>
+          <Typography variant="h2" sx={{ fontWeight: 800, mt: 1 }}>
+            {value}
+          </Typography>
         </CardContent>
       </Card>
     </Grid>

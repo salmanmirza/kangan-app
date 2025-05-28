@@ -3,9 +3,13 @@ import { NavLink } from 'react-router-dom';
 import {
     AppBar, Box, CssBaseline, Divider, Drawer, IconButton, List, ListItem, ListItemButton,
     ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography, Avatar,
-    Modal, Stack, TextField, Button
+    Modal, Stack, TextField, Button, Tooltip
 } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import SchoolIcon from '@mui/icons-material/School';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import GroupIcon from '@mui/icons-material/Group';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
 
@@ -15,15 +19,11 @@ export default function NavBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [openModal, setOpenModal] = React.useState(false);
     const [formData, setFormData] = React.useState({
-        _id: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: ''
+        _id: '', firstName: '', lastName: '', email: '', password: ''
     });
 
     const user = JSON.parse(localStorage.getItem('user'));
-    const role = JSON.parse(localStorage.getItem('role')); // Get role from localStorage
+    const role = JSON.parse(localStorage.getItem('role'));
     const userName = user?.firstName || 'User';
     const userId = user?._id;
 
@@ -38,7 +38,7 @@ export default function NavBar() {
                 firstName: res.data.firstName || '',
                 lastName: res.data.lastName || '',
                 email: res.data.email || '',
-                password: '' // Don't pre-fill password for security
+                password: ''
             });
             setOpenModal(true);
         } catch (err) {
@@ -46,24 +46,19 @@ export default function NavBar() {
         }
     };
 
-    const handleChange = (e) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    };
+    const handleChange = (e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await axios.put(`http://localhost:3001/users/editUpdateUserById?userId=${userId}`, formData);
-
-            // ✅ Preserve the user's role in localStorage
             localStorage.setItem('user', JSON.stringify({
                 _id: formData._id,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 email: formData.email,
-                role: user.role // include the original role
+                role: user.role
             }));
-
             setOpenModal(false);
             window.location.reload();
         } catch (err) {
@@ -83,17 +78,34 @@ export default function NavBar() {
         p: 4,
     };
 
+    const navItems = [
+        { to: "/dashboard", icon: <DashboardIcon color="primary" />, label: "Dashboard" },
+        { to: "/dashboard/courses", icon: <SchoolIcon color="secondary" />, label: "Courses" },
+        { to: "/dashboard/assignments", icon: <AssignmentIcon color="success" />, label: "Assignments" },
+        ...(role === 'admin' ? [
+            { to: "/dashboard/users", icon: <GroupIcon color="warning" />, label: "Users" },
+            { to: "/dashboard/enrollments", icon: <HowToRegIcon color="error" />, label: "Enrollments" }
+        ] : [])
+    ];
+
     return (
         <>
             <CssBaseline />
-            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+            <AppBar position="fixed" sx={{
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                background: 'linear-gradient(to right, #3f51b5, #2196f3)',
+            }}>
                 <Toolbar>
-                    <Typography variant="h5">Kangan</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>Kangan</Typography>
                     <Box sx={{ flexGrow: 1 }} />
-                    <Typography sx={{ mr: 2 }}>Welcome, {userName}</Typography>
-                    <IconButton onClick={handleMenuClick} size="small" sx={{ ml: 1 }}>
-                        <Avatar>{userName.charAt(0)}</Avatar>
-                    </IconButton>
+                    <Typography sx={{ mr: 2, color: 'white' }}>Welcome, {userName}</Typography>
+                    <Tooltip title="Profile">
+                        <IconButton onClick={handleMenuClick} size="small" sx={{ ml: 1 }}>
+                            <Avatar sx={{ bgcolor: "#fff", color: "#3f51b5", fontWeight: 'bold' }}>
+                                {userName.charAt(0).toUpperCase()}
+                            </Avatar>
+                        </IconButton>
+                    </Tooltip>
                     <Menu
                         anchorEl={anchorEl}
                         open={Boolean(anchorEl)}
@@ -112,66 +124,47 @@ export default function NavBar() {
             </AppBar>
 
             <Drawer
-                sx={{ width: "140px", flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } }}
+                sx={{
+                    width: drawerWidth,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: drawerWidth,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#f5f5f5'
+                    }
+                }}
                 variant="permanent"
                 anchor="left"
             >
                 <Toolbar />
                 <Divider />
                 <List>
-                    {/* Always visible */}
-                    <ListItem>
-                        <ListItemButton component={NavLink} to="/dashboard">
-                            <ListItemIcon><PeopleIcon /></ListItemIcon>
-                            <ListItemText primary="Dashboard" />
-                        </ListItemButton>
-                    </ListItem>
-
-                    <ListItem>
-                        <ListItemButton component={NavLink} to="/dashboard/courses">
-                            <ListItemIcon><PeopleIcon /></ListItemIcon>
-                            <ListItemText primary="Courses" />
-                        </ListItemButton>
-                    </ListItem>
-
-                    <ListItem>
-                        <ListItemButton component={NavLink} to="/dashboard/assignments">
-                            <ListItemIcon><PeopleIcon /></ListItemIcon>
-                            <ListItemText primary="Assignments" />
-                        </ListItemButton>
-                    </ListItem>
-
-                    {/* Only Admin can see Users and Enrollments */}
-                    {role === 'admin' && (
-                        <>
-                            <ListItem>
-                                <ListItemButton component={NavLink} to="/dashboard/users">
-                                    <ListItemIcon><PeopleIcon /></ListItemIcon>
-                                    <ListItemText primary="Users" />
-                                </ListItemButton>
-                            </ListItem>
-
-                            <ListItem>
-                                <ListItemButton component={NavLink} to="/dashboard/enrollments">
-                                    <ListItemIcon><PeopleIcon /></ListItemIcon>
-                                    <ListItemText primary="Enrollments" />
-                                </ListItemButton>
-                            </ListItem>
-                        </>
-                    )}
+                    {navItems.map(({ to, icon, label }) => (
+                        <ListItem key={label} disablePadding>
+                            <ListItemButton component={NavLink} to={to} sx={{
+                                '&:hover': {
+                                    backgroundColor: '#e0f7fa',
+                                    transform: 'scale(1.01)',
+                                    transition: '0.2s ease-in-out'
+                                }
+                            }}>
+                                <ListItemIcon>{icon}</ListItemIcon>
+                                <ListItemText primary={label} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
                 </List>
             </Drawer>
 
-            {/* Profile Update Modal */}
             <Modal open={openModal} onClose={() => setOpenModal(false)}>
                 <Box sx={modalStyle} component="form" onSubmit={handleSubmit}>
-                    <Typography variant="h6">Edit Profile</Typography>
+                    <Typography variant="h6" fontWeight="bold">Edit Profile</Typography>
                     <Stack spacing={2} mt={2}>
                         <TextField name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} fullWidth />
                         <TextField name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} fullWidth />
                         <TextField name="email" label="Email" value={formData.email} onChange={handleChange} fullWidth />
                         <TextField name="password" label="Password" type="password" value={formData.password} onChange={handleChange} fullWidth />
-                        <Button type="submit" variant="contained">Update</Button>
+                        <Button type="submit" variant="contained" color="primary">Update</Button>
                     </Stack>
                 </Box>
             </Modal>
