@@ -131,7 +131,7 @@ export default function Dashboard() {
     fetchStats();
   }, [isRootDashboard]);
 
-  // Question completion handler for student todo list
+  // Question completion handler for student/teacher// todo list
   async function handleCheck(questionId) {
     if (questionsLoading || completedIds.has(questionId)) return;
     
