@@ -117,7 +117,8 @@ export default function Dashboard() {
     fetchStats();
   }, [isRootDashboard]);
 
-  const handleCheck = async (questionId) => {
+  // Question completion handler for student/teacher// todo list
+  async function handleCheck(questionId) {
     if (questionsLoading || completedIds.has(questionId)) return;
 
     try {
