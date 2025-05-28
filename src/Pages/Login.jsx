@@ -3,6 +3,7 @@ import {
     Container, Typography, Button, Paper, Stack, TextField
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import UniversalChatBot from "../../components/universalChatBot";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 
@@ -70,6 +71,8 @@ export default function Login() {
                     </Paper>
                 </Stack>
             </Container>
+            {/* Add the Universal ChatBot */}
+        <UniversalChatBot />
         </>
     );
 }

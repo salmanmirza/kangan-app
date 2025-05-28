@@ -6,7 +6,7 @@ import NavBar from '../../components/navBar';
 import axios from 'axios';
 import StudentQuestionTodo from '../../components/toDoList';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import ChatBot from '../../components/ChatBot';
+import UniversalChatBot from '../../components/universalChatBot';
 
 export default function Dashboard() {
   const location = useLocation();
@@ -215,7 +215,7 @@ export default function Dashboard() {
         )}
         <Outlet />
       </Box>
-      <ChatBot />
+      <UniversalChatBot />
     </Box>
   );
 }
