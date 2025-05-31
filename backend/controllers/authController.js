@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 // const jwt = require("jsonwebtoken");
 import mongoose from 'mongoose';
 
-const sercret = "k4ng4n123";
+const secret = "k4ng4n123";
 
 const register = async (req, res) => {
     console.log(req.body);
@@ -33,34 +33,35 @@ const register = async (req, res) => {
 
 
 const login = async (req, res) => {
-
     try {
-        const { email, password } = req.body;
-
-        const user = await User.findOne({ email: email });
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found--invalid email" })
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid password" });
-        }
-
-        const token = jwt.sign({ email: user.email, role: user.role }, sercret, { expiresIn: '1h' });
-
-        console.log(token);
-        res.status(200).json({ message: "Success", "token": token, "user": user });
-        if (!token) {
-            return res.status(401).json({ message: "No token provided --access denied" });
-        }
-
-        return res.status(200).json({ message: "Success", token, user });
+      const { email, password, role } = req.body;
+  
+      if (!email || !password || !role) {
+        return res.status(400).json({ message: "Email, password, and role are required." });
+      }
+  
+      // Find user by email and role
+      const user = await User.findOne({ email, role });
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found or role mismatch." });
+      }
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid password." });
+      }
+  
+      const token = jwt.sign(
+        { id: user._id, email: user.email, role: user.role },
+        secret,
+        { expiresIn: "1h" }
+      );
+  
+      return res.status(200).json({ message: "Success", token, user });
     } catch (error) {
-        return res.status(500).json({ message: "Something went wrong on login" });
-
+      console.error("Login error:", error);
+      return res.status(500).json({ message: "Something went wrong on login." });
     }
-
-}
+  };
 export { register, login };

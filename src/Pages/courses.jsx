@@ -30,7 +30,7 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: 800,
-  bgcolor: '#f5f7fa', // light background consistent with page
+  bgcolor: '#fff', // explicitly white modal background for clarity
   borderRadius: 3,
   boxShadow: 24,
   p: 4,
@@ -178,11 +178,12 @@ const Courses = () => {
   return (
     <>
       <NavBar />
-      {/* Full page background */}
+      {/* Full page background with soft light blue-gray */}
       <Box
         sx={{
-          bgcolor: '#f5f7fa', // consistent soft light blue-gray background
+          bgcolor: '#f5f7fa', // soft light blue-gray background for subtle contrast
           minHeight: '100vh',
+          mt: 8,
           py: 4,
           px: 2,
         }}
@@ -234,10 +235,11 @@ const Courses = () => {
                           sx={{
                             borderTopLeftRadius: 16,
                             borderTopRightRadius: 16,
+                            backgroundColor:'transparent',
                           }}
                         />
                       )}
-                      <CardContent sx={{ minHeight: 140 }}>
+                      <CardContent sx={{ minHeight: 140,backgroundColor: 'transparent' }}>
                         <Typography
                           gutterBottom
                           variant="h6"
@@ -282,7 +284,7 @@ const Courses = () => {
                       >
                         <Button
                           size="small"
-                          variant="outlined"
+                          variant="contained"
                           color="primary"
                           onClick={() => handleEditAndUpdate(course)}
                           sx={{ textTransform: 'none', fontWeight: 'medium' }}
@@ -291,7 +293,7 @@ const Courses = () => {
                         </Button>
                         <Button
                           size="small"
-                          variant="outlined"
+                          variant="contained"
                           color="error"
                           onClick={() => handleDelete(course._id)}
                           sx={{ textTransform: 'none', fontWeight: 'medium' }}

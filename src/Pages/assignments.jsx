@@ -292,15 +292,15 @@ export default function Assignments() {
       >
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Assignment No</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Course</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Teacher</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Due Date</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>File</TableCell>
-              {userRole !== 'student' && <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>}
+            <TableRow sx={{ bgcolor: 'primary.main' }}>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Title</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Description</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Assignment No</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Course</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Teacher</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Due Date</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>File</TableCell>
+              {userRole !== 'student' && <TableCell sx={{ color: 'white', fontWeight: '600' }}>Actions</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>

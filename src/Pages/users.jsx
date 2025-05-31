@@ -16,8 +16,8 @@ const style = {
   maxWidth: 800,
   maxHeight: '90vh',
   bgcolor: 'background.paper',
-  borderRadius: 2,
-  boxShadow: 24,
+  borderRadius: 3,
+  boxShadow: 26,
   p: 4,
   overflowY: 'auto',
   boxSizing: 'border-box',
@@ -201,10 +201,12 @@ const Users = () => {
   }
 
   return (
-    <Box sx={{ pt: '80px', px: 3, boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
+    <Box sx={{ pt: '80px', px: 3, boxSizing: 'border-box', width: '100%', overflowX: 'hidden', bgcolor: '#f9f9fb', minHeight: '100vh' }}>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style} component="form" onSubmit={handleSubmit}>
-          <Typography variant="h6">{isEditMode ? 'Edit User' : 'Add User'}</Typography>
+          <Typography variant="h5" fontWeight="600" gutterBottom>
+            {isEditMode ? 'Edit User' : 'Add User'}
+          </Typography>
           <Stack spacing={2} mt={2}>
             <TextField
               name="firstName"
@@ -213,6 +215,7 @@ const Users = () => {
               onChange={handleChange}
               fullWidth
               required
+              size="medium"
             />
             <TextField
               name="lastName"
@@ -221,6 +224,7 @@ const Users = () => {
               onChange={handleChange}
               fullWidth
               required
+              size="medium"
             />
             <TextField
               name="email"
@@ -230,6 +234,7 @@ const Users = () => {
               fullWidth
               required
               type="email"
+              size="medium"
             />
             <TextField
               name="password"
@@ -238,10 +243,11 @@ const Users = () => {
               onChange={handleChange}
               type="password"
               fullWidth
+              size="medium"
               {...(isEditMode ? {} : { required: true })}
               helperText={isEditMode ? 'Leave blank to keep current password' : ''}
             />
-            <FormControl fullWidth required>
+            <FormControl fullWidth required size="medium">
               <InputLabel>Role</InputLabel>
               <Select
                 name="role"
@@ -255,7 +261,7 @@ const Users = () => {
             </FormControl>
 
             {formData.role === 'teacher' && (
-              <FormControl fullWidth required>
+              <FormControl fullWidth required size="medium">
                 <InputLabel>Course</InputLabel>
                 <Select
                   name="course"
@@ -281,6 +287,7 @@ const Users = () => {
                     value={formData.studentRollNo}
                     onChange={handleChange}
                     fullWidth
+                    size="medium"
                   />
                   <TextField
                     name="studentGuardian"
@@ -288,10 +295,11 @@ const Users = () => {
                     value={formData.studentGuardian}
                     onChange={handleChange}
                     fullWidth
+                    size="medium"
                   />
                 </Stack>
 
-                <FormControl fullWidth>
+                <FormControl fullWidth size="medium">
                   <InputLabel>Courses</InputLabel>
                   <Select
                     name="courses"
@@ -310,7 +318,7 @@ const Users = () => {
               </>
             )}
 
-            <Button variant="contained" type="submit" fullWidth>
+            <Button variant="contained" type="submit" fullWidth size="large" sx={{ mt: 1 }}>
               {isEditMode ? 'Update' : 'Add'}
             </Button>
           </Stack>
@@ -318,30 +326,47 @@ const Users = () => {
       </Modal>
 
       <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button onClick={handleAddNewUser} variant="contained">Add User</Button>
+        <Button onClick={handleAddNewUser} variant="contained" size="large" color="primary">
+          Add User
+        </Button>
       </Box>
 
-      <Tabs value={value} onChange={handleTabChange}>
+      <Tabs
+        value={value}
+        onChange={handleTabChange}
+        textColor="primary"
+        indicatorColor="primary"
+        sx={{ mb: 2 }}
+      >
         <Tab label="Teachers" {...a11yProps(0)} />
         <Tab label="Students" {...a11yProps(1)} />
       </Tabs>
 
       <CustomTabPanel value={value} index={0}>
-        <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}>
+        <TableContainer component={Paper} sx={{
+          mt: 3, borderRadius: 3, maxWidth: '100%', overflowX: 'auto',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+        }}>
           <Table sx={{ width: '100%', minWidth: 900 }} size="medium">
             <TableHead>
-              <TableRow>
-                <TableCell>First Name</TableCell>
-                <TableCell>Last Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Course</TableCell>
-                <TableCell>Actions</TableCell>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>First Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Last Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Email</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Role</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Course</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {teachers.map((row) => (
-                <TableRow key={row._id}>
+                <TableRow
+                  key={row._id}
+                  sx={{
+                    '&:hover': { bgcolor: 'action.hover' },
+                    cursor: 'pointer'
+                  }}
+                >
                   <TableCell>{row.firstName}</TableCell>
                   <TableCell>{row.lastName}</TableCell>
                   <TableCell>{row.email}</TableCell>
@@ -363,21 +388,30 @@ const Users = () => {
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={1}>
-        <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}>
+        <TableContainer component={Paper} sx={{
+          mt: 3, borderRadius: 3, maxWidth: '100%', overflowX: 'auto',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+        }}>
           <Table sx={{ width: '100%', minWidth: 900 }} size="medium">
             <TableHead>
-              <TableRow>
-                <TableCell>First Name</TableCell>
-                <TableCell>Last Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Courses</TableCell>
-                <TableCell>Actions</TableCell>
+              <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>First Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Last Name</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Email</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Role</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Courses</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: '600' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {students.map((row) => (
-                <TableRow key={row._id}>
+                <TableRow
+                  key={row._id}
+                  sx={{
+                    '&:hover': { bgcolor: 'action.hover' },
+                    cursor: 'pointer'
+                  }}
+                >
                   <TableCell>{row.firstName}</TableCell>
                   <TableCell>{row.lastName}</TableCell>
                   <TableCell>{row.email}</TableCell>

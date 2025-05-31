@@ -23,9 +23,10 @@ export default function NavBar() {
     });
 
     const user = JSON.parse(localStorage.getItem('user'));
-    const role = JSON.parse(localStorage.getItem('role'));
+    const role = localStorage.getItem('role'); // fix here
+    
     const userName = user?.firstName || 'User';
-    const userId = user?._id;
+    const userId = user?._id
 
     const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
     const handleClose = () => setAnchorEl(null);
