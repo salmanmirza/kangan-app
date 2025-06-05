@@ -9,6 +9,8 @@ import Users from "./Pages/users";
 import Assignments from "./Pages/assignments";
 import Enrollments from "./Pages/enrollments";
 import Unauthorized from "./Pages/unauthorized";
+import Submissions from "./Pages/submissions"; // make sure this path matches your folder
+
 
 import ProtectedRoute from "../components/protectedRoutesAuth";
 
@@ -30,10 +32,12 @@ function App() {
         >
           {/* Shared dashboard landing */}
           <Route index element={<Dashboard />} />
-          
+
           {/* These are for teacher/student */}
           <Route path="courses" element={<Courses />} />
           <Route path="assignments" element={<Assignments />} />
+          <Route path="submissions" element={<Submissions />} />
+
 
           {/* Admin-only nested route for enrollments */}
           <Route

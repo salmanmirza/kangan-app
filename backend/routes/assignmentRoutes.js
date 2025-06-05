@@ -7,6 +7,7 @@ import verifyToken from '../middlewares/authMiddleware.js'; // Assuming you have
 import Assignment from '../models/assignmentModel.js'; // Ensure that the model is imported
 import Course from '../models/coursesModel.js';  // Assuming you have a `Course` model
 import User from '../models/userModel.js';  // Assuming you have a `User` model (teacher)
+import Submission from '../models/submissionModel.js';
 
 const router = express.Router();
 
@@ -202,6 +203,7 @@ router.get('/getAssignmentsByRole', async (req, res) => {
     }
 });
 
-
+  
+  
 
 export default router;

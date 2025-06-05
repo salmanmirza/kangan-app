@@ -12,6 +12,8 @@ import GroupIcon from '@mui/icons-material/Group';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+
 
 const drawerWidth = 240;
 
@@ -23,8 +25,8 @@ export default function NavBar() {
     });
 
     const user = JSON.parse(localStorage.getItem('user'));
-    const role = localStorage.getItem('role'); // fix here
-    
+    const role = localStorage.getItem('role');
+
     const userName = user?.firstName || 'User';
     const userId = user?._id
 
@@ -83,6 +85,8 @@ export default function NavBar() {
         { to: "/dashboard", icon: <DashboardIcon color="primary" />, label: "Dashboard" },
         { to: "/dashboard/courses", icon: <SchoolIcon color="secondary" />, label: "Courses" },
         { to: "/dashboard/assignments", icon: <AssignmentIcon color="success" />, label: "Assignments" },
+        { to: "/dashboard/submissions", icon: <AssignmentTurnedInIcon color="info" />, label: "Submissions" },
+
         ...(role === 'admin' ? [
             { to: "/dashboard/users", icon: <GroupIcon color="warning" />, label: "Users" },
             { to: "/dashboard/enrollments", icon: <HowToRegIcon color="error" />, label: "Enrollments" }

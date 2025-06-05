@@ -18,6 +18,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js"
 import QuestionRoutes from './routes/QuestionRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import guestChatRoutes from './routes/guestChatRoutes.js';
+import submissionRoutes from './routes/submissionRoutes.js';
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,7 @@ app.use("/enrollments", enrollmentsRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/questions", QuestionRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/submissions', submissionRoutes);
 app.use('/api/guest/chat', guestChatRoutes);
 
 // app.use("/auth", require("./routes/authRoutes.js"));

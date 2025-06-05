@@ -18,6 +18,10 @@ const modalStyle = {
 };
 
 export default function Assignments() {
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [submissionFile, setSubmissionFile] = useState(null);
+
   const [open, setOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [assignments, setAssignments] = useState([]);
@@ -104,7 +108,7 @@ export default function Assignments() {
       course: assignment.course._id,
       teacher: assignment.teacher._id,
       assignmentNo: assignment.assignmentNo,
-      assignmentFile: '', // Clear file field during edit
+      assignmentFile: '',
       dueDate: formattedDate
     });
     setIsEditMode(true);
@@ -165,13 +169,55 @@ export default function Assignments() {
     }
   };
 
+  const handleOpenSubmitModal = (assignment) => {
+    setSelectedAssignment(assignment);
+    setSubmitModalOpen(true);
+  };
+
+  const handleCloseSubmitModal = () => {
+    setSelectedAssignment(null);
+    setSubmissionFile(null);
+    setSubmitModalOpen(false);
+  };
+
+  const handleSubmissionFileChange = (e) => {
+    setSubmissionFile(e.target.files[0]);
+  };
+
+  const handleSubmitAssignment = async (e) => {
+    e.preventDefault();
+    if (!submissionFile || !selectedAssignment) return;
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const form = new FormData();
+    form.append("assignmentId", selectedAssignment._id);
+    form.append("studentId", user._id);
+    form.append("file", submissionFile);
+    form.append("courseId", selectedAssignment.course._id);
+    form.append("textResponse", ""); // Assuming text response is optional
+    form.append("comment", ""); // Assuming comment is optional
+
+    try {
+      await axios.post("http://localhost:3001/submissions/submitAssignment", form, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      handleCloseSubmitModal();
+      alert("Assignment submitted successfully!");
+    } catch (err) {
+      console.error("Submission failed:", err);
+      alert("Error submitting assignment.");
+    }
+  };
+
   return (
     <Box
       sx={{
-        minHeight: 'calc(100vh - 64px)', // Assuming navbar height is 64px
+        minHeight: 'calc(100vh - 64px)',
         width: '100%',
         bgcolor: '#f5f5f5',
-        pt: 8,  // padding-top to push below navbar
+        pt: 8,
         px: { xs: 2, sm: 4, md: 6 },
         boxSizing: 'border-box',
         overflowX: 'auto',
@@ -184,76 +230,25 @@ export default function Assignments() {
             {isEditMode ? 'Edit Assignment' : 'Add Assignment'}
           </Typography>
           <Stack spacing={2}>
-            <TextField
-              name="title"
-              label="Title"
-              value={formData.title}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
-            <TextField
-              name="description"
-              label="Description"
-              value={formData.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={3}
-            />
-            <TextField
-              name="assignmentNo"
-              label="Assignment No"
-              type="number"
-              value={formData.assignmentNo}
-              onChange={handleChange}
-              fullWidth
-              required
-              inputProps={{ min: 1 }}
-            />
-            <TextField
-              name="dueDate"
-              label="Due Date"
-              type="date"
-              value={formData.dueDate}
-              onChange={handleChange}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-            />
+            <TextField name="title" label="Title" value={formData.title} onChange={handleChange} fullWidth required />
+            <TextField name="description" label="Description" value={formData.description} onChange={handleChange} fullWidth multiline rows={3} />
+            <TextField name="assignmentNo" label="Assignment No" type="number" value={formData.assignmentNo} onChange={handleChange} fullWidth required inputProps={{ min: 1 }} />
+            <TextField name="dueDate" label="Due Date" type="date" value={formData.dueDate} onChange={handleChange} InputLabelProps={{ shrink: true }} fullWidth required />
             <FormControl fullWidth required>
               <InputLabel>Course</InputLabel>
-              <Select
-                name="course"
-                value={formData.course}
-                onChange={handleChange}
-                label="Course"
-              >
-                <MenuItem value="">
-                  <em>Select a Course</em>
-                </MenuItem>
+              <Select name="course" value={formData.course} onChange={handleChange} label="Course">
+                <MenuItem value=""><em>Select a Course</em></MenuItem>
                 {courses.map(course => (
-                  <MenuItem key={course._id} value={course._id}>
-                    {course.courseName}
-                  </MenuItem>
+                  <MenuItem key={course._id} value={course._id}>{course.courseName}</MenuItem>
                 ))}
               </Select>
             </FormControl>
             <FormControl fullWidth required>
               <InputLabel>Teacher</InputLabel>
-              <Select
-                name="teacher"
-                value={formData.teacher}
-                onChange={handleChange}
-                label="Teacher"
-              >
-                <MenuItem value="">
-                  <em>Select a Teacher</em>
-                </MenuItem>
+              <Select name="teacher" value={formData.teacher} onChange={handleChange} label="Teacher">
+                <MenuItem value=""><em>Select a Teacher</em></MenuItem>
                 {teachers.map(teacher => (
-                  <MenuItem key={teacher._id} value={teacher._id}>
-                    {teacher.firstName} {teacher.lastName}
-                  </MenuItem>
+                  <MenuItem key={teacher._id} value={teacher._id}>{teacher.firstName} {teacher.lastName}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -270,26 +265,13 @@ export default function Assignments() {
 
       {userRole !== 'student' && (
         <Box display="flex" justifyContent="flex-end" mb={3}>
-          <Button
-            onClick={handleOpen}
-            variant="contained"
-            size="large"
-            sx={{ fontWeight: 'bold' }}
-          >
+          <Button onClick={handleOpen} variant="contained" size="large" sx={{ fontWeight: 'bold' }}>
             Add Assignment
           </Button>
         </Box>
       )}
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          maxWidth: '1200px',
-          margin: 'auto',
-          borderRadius: 3,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        }}
-      >
+      <TableContainer component={Paper} sx={{ maxWidth: '1200px', margin: 'auto', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: 'primary.main' }}>
@@ -300,7 +282,7 @@ export default function Assignments() {
               <TableCell sx={{ color: 'white', fontWeight: '600' }}>Teacher</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: '600' }}>Due Date</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: '600' }}>File</TableCell>
-              {userRole !== 'student' && <TableCell sx={{ color: 'white', fontWeight: '600' }}>Actions</TableCell>}
+              <TableCell sx={{ color: 'white', fontWeight: '600' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -314,11 +296,7 @@ export default function Assignments() {
                 <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
                 <TableCell>
                   {assignment.assignmentFile ? (
-                    <a
-                      href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`}
-                      download
-                      rel="noopener noreferrer"
-                    >
+                    <a href={`http://localhost:3001/uploads/assignments/${assignment.assignmentFile}`} download rel="noopener noreferrer">
                       Download File
                     </a>
                   ) : (
@@ -327,22 +305,18 @@ export default function Assignments() {
                 </TableCell>
                 {userRole !== 'student' && (
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      color="info"
-                      size="small"
-                      onClick={() => handleEdit(assignment)}
-                      sx={{ mr: 1 }}
-                    >
+                    <Button variant="contained" color="info" size="small" onClick={() => handleEdit(assignment)} sx={{ mr: 1 }}>
                       Edit
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      size="small"
-                      onClick={() => handleDelete(assignment._id)}
-                    >
+                    <Button variant="contained" color="error" size="small" onClick={() => handleDelete(assignment._id)}>
                       Delete
+                    </Button>
+                  </TableCell>
+                )}
+                {userRole === 'student' && (
+                  <TableCell>
+                    <Button variant="contained" color="primary" size="small" onClick={() => handleOpenSubmitModal(assignment)}>
+                      Submit
                     </Button>
                   </TableCell>
                 )}
@@ -351,6 +325,23 @@ export default function Assignments() {
           </TableBody>
         </Table>
       </TableContainer>
+      
+      <Modal open={submitModalOpen} onClose={handleCloseSubmitModal}>
+        <Box sx={modalStyle} component="form" onSubmit={handleSubmitAssignment}>
+          <Typography variant="h6" mb={3} fontWeight="bold">
+            Submit Assignment: {selectedAssignment?.title}
+          </Typography>
+          <Stack spacing={2}>
+            <Button variant="outlined" component="label" fullWidth>
+              {submissionFile?.name || 'Choose File to Upload'}
+              <input hidden type="file" onChange={handleSubmissionFileChange} />
+            </Button>
+            <Button variant="contained" type="submit" fullWidth size="large" sx={{ fontWeight: 'bold' }}>
+              Submit
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
     </Box>
   );
 }
