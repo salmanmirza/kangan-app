@@ -154,9 +154,9 @@ export default function Dashboard() {
 
   const handleTourFinish = async () => {
     try {
-      await axios.post(
-        'http://localhost:3001/users/clearFirstLogin',
-        { userId },
+      const response = await axios.put(
+        `http://localhost:3001/users/${userId}/firstLogin`,
+        { firstLogin: false },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -164,12 +164,13 @@ export default function Dashboard() {
         }
       );
 
-      const updatedUser = { ...user, firstLogin: false };
+      const updatedUser = response.data.user;
       localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (err) {
       console.error('Failed to update first login:', err);
     }
   };
+
 
   const renderContent = () => {
     if (loading)
