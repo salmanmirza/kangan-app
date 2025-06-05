@@ -82,14 +82,13 @@ export default function NavBar() {
     };
 
     const navItems = [
-        { to: "/dashboard", icon: <DashboardIcon color="primary" />, label: "Dashboard" },
-        { to: "/dashboard/courses", icon: <SchoolIcon color="secondary" />, label: "Courses" },
-        { to: "/dashboard/assignments", icon: <AssignmentIcon color="success" />, label: "Assignments" },
-        { to: "/dashboard/submissions", icon: <AssignmentTurnedInIcon color="info" />, label: "Submissions" },
-
+        { id: "dashboard-link", to: "/dashboard", icon: <DashboardIcon color="primary" />, label: "Dashboard" },
+        { id: "courses-link", to: "/dashboard/courses", icon: <SchoolIcon color="secondary" />, label: "Courses" },
+        { id: "assignments-link", to: "/dashboard/assignments", icon: <AssignmentIcon color="success" />, label: "Assignments" },
+        { id: "submissions-link", to: "/dashboard/submissions", icon: <AssignmentTurnedInIcon color="info" />, label: "Submissions" },
         ...(role === 'admin' ? [
-            { to: "/dashboard/users", icon: <GroupIcon color="warning" />, label: "Users" },
-            { to: "/dashboard/enrollments", icon: <HowToRegIcon color="error" />, label: "Enrollments" }
+            { id: "users-link", to: "/dashboard/users", icon: <GroupIcon color="warning" />, label: "Users" },
+            { id: "enrollments-link", to: "/dashboard/enrollments", icon: <HowToRegIcon color="error" />, label: "Enrollments" }
         ] : [])
     ];
 
@@ -105,7 +104,7 @@ export default function NavBar() {
                     <Box sx={{ flexGrow: 1 }} />
                     <Typography sx={{ mr: 2, color: 'white' }}>Welcome, {userName}</Typography>
                     <Tooltip title="Profile">
-                        <IconButton onClick={handleMenuClick} size="small" sx={{ ml: 1 }}>
+                        <IconButton onClick={handleMenuClick} size="small" sx={{ ml: 1 }} className="joyride-profile">
                             <Avatar sx={{ bgcolor: "#fff", color: "#3f51b5", fontWeight: 'bold' }}>
                                 {userName.charAt(0).toUpperCase()}
                             </Avatar>
@@ -144,20 +143,27 @@ export default function NavBar() {
                 <Toolbar />
                 <Divider />
                 <List>
-                    {navItems.map(({ to, icon, label }) => (
+                    {navItems.map(({ to, icon, label, id }) => (
                         <ListItem key={label} disablePadding>
-                            <ListItemButton component={NavLink} to={to} sx={{
-                                '&:hover': {
-                                    backgroundColor: '#e0f7fa',
-                                    transform: 'scale(1.01)',
-                                    transition: '0.2s ease-in-out'
-                                }
-                            }}>
+                            <ListItemButton
+                                component={NavLink}
+                                to={to}
+                                id={id}
+                                className={`joyride-${id}`} // ✅ This is key
+                                sx={{
+                                    '&:hover': {
+                                        backgroundColor: '#e0f7fa',
+                                        transform: 'scale(1.01)',
+                                        transition: '0.2s ease-in-out'
+                                    }
+                                }}
+                            >
                                 <ListItemIcon>{icon}</ListItemIcon>
                                 <ListItemText primary={label} />
                             </ListItemButton>
                         </ListItem>
                     ))}
+
                 </List>
             </Drawer>
 

@@ -122,6 +122,10 @@ const Submissions = () => {
                     )}
                 </Box>
             </Container>
+            <Box className="joyride-submissions">
+                {/* Submissions UI */}
+            </Box>
+
         </>
     );
 };

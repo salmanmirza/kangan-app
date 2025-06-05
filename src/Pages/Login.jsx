@@ -57,7 +57,7 @@ export default function Login() {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
         localStorage.setItem("role", result.data.user.role);
-
+        console.log("user first login:", result.data.user);
         navigate("/dashboard");
       } else {
         setError("Invalid credentials.");

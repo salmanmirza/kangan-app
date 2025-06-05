@@ -240,4 +240,21 @@ router.put('/editUpdateUserById', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
+// PATCH /users/disableFirstLogin
+router.patch('/disableFirstLogin', async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { firstLogin: false },
+        { new: true }
+      );
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to update firstLogin flag' });
+    }
+  });
+  
 export default router;

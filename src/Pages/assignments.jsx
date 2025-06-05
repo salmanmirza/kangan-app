@@ -325,7 +325,7 @@ export default function Assignments() {
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       <Modal open={submitModalOpen} onClose={handleCloseSubmitModal}>
         <Box sx={modalStyle} component="form" onSubmit={handleSubmitAssignment}>
           <Typography variant="h6" mb={3} fontWeight="bold">
@@ -342,6 +342,10 @@ export default function Assignments() {
           </Stack>
         </Box>
       </Modal>
+      <Box className="joyride-assignments">
+        {/* Assignment List/Link */}
+      </Box>
+
     </Box>
   );
 }

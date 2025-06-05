@@ -13,6 +13,8 @@ import NavBar from '../../components/navBar';
 import axios from 'axios';
 import StudentQuestionTodo from '../../components/toDoList';
 import UniversalChatBot from '../../components/universalChatBot';
+import StudentOnboardingTour from '../../components/studentOnboardingTour';
+
 
 export default function Dashboard() {
   const location = useLocation();
@@ -204,6 +206,9 @@ export default function Dashboard() {
     >
       <CssBaseline />
       <NavBar />
+      <Box className="joyride-chatbot" sx={{ position: 'fixed', bottom: 20, right: 20 }}>
+        <UniversalChatBot />
+      </Box>
       <Box
         component="main"
         sx={{
@@ -217,6 +222,8 @@ export default function Dashboard() {
           textAlign: 'center',
         }}
       >
+
+
         {isRootDashboard && (
           <>
             <Typography
@@ -234,8 +241,11 @@ export default function Dashboard() {
           </>
         )}
         <Outlet />
+
       </Box>
-      <UniversalChatBot />
+      {role === 'student' && user?.firstLogin && <StudentOnboardingTour role={role} />}
+
+
     </Box>
   );
 }
