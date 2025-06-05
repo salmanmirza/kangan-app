@@ -15,7 +15,6 @@ import StudentQuestionTodo from '../../components/toDoList';
 import UniversalChatBot from '../../components/universalChatBot';
 import StudentOnboardingTour from '../../components/studentOnboardingTour';
 
-
 export default function Dashboard() {
   const location = useLocation();
   const isRootDashboard = location.pathname.replace(/\/+$/, '') === '/dashboard';
@@ -37,6 +36,9 @@ export default function Dashboard() {
   const [questions, setQuestions] = useState([]);
   const [questionsLoading, setQuestionsLoading] = useState(true);
   const [completedIds, setCompletedIds] = useState(new Set());
+
+  const [showWelcome, setShowWelcome] = useState(user?.firstLogin && role === 'student');
+  const [showTour, setShowTour] = useState(false);
 
   const fetchEnrolledStudents = async (userId, token) => {
     try {
@@ -103,12 +105,13 @@ export default function Dashboard() {
         params['courseId[]'] = courseId;
       }
 
-      axios.get('http://localhost:3001/questions/questions', { params })
-        .then(res => {
+      axios
+        .get('http://localhost:3001/questions/questions', { params })
+        .then((res) => {
           setQuestions(res.data.questions || []);
           setCompletedIds(new Set(res.data.completedIds || []));
         })
-        .catch(err => {
+        .catch((err) => {
           console.error('Error fetching questions:', err);
           setQuestions([]);
           setCompletedIds(new Set());
@@ -119,24 +122,52 @@ export default function Dashboard() {
     fetchStats();
   }, [isRootDashboard]);
 
-  // Question completion handler for student/teacher// todo list
+  useEffect(() => {
+    if (showWelcome) {
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+        setShowTour(true);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome]);
+
   async function handleCheck(questionId) {
     if (questionsLoading || completedIds.has(questionId)) return;
 
     try {
-      setCompletedIds(prev => new Set([...prev, questionId]));
+      setCompletedIds((prev) => new Set([...prev, questionId]));
       await axios.post('http://localhost:3001/questions/complete', {
         userId,
         courseId,
-        questionId
+        questionId,
       });
     } catch (err) {
       console.error('Failed to mark question complete:', err);
-      setCompletedIds(prev => {
+      setCompletedIds((prev) => {
         const newSet = new Set([...prev]);
         newSet.delete(questionId);
         return newSet;
       });
+    }
+  }
+
+  const handleTourFinish = async () => {
+    try {
+      await axios.post(
+        'http://localhost:3001/users/clearFirstLogin',
+        { userId },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      const updatedUser = { ...user, firstLogin: false };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Failed to update first login:', err);
     }
   };
 
@@ -179,7 +210,6 @@ export default function Dashboard() {
         {statItems.map((item, idx) => (
           <StatCard key={idx} title={item.title} value={item.value} />
         ))}
-
         {role === 'student' && (
           <Grid item xs={12}>
             <StudentQuestionTodo
@@ -222,10 +252,48 @@ export default function Dashboard() {
           textAlign: 'center',
         }}
       >
-
-
         {isRootDashboard && (
           <>
+            {showWelcome && (
+              <Box
+                sx={{
+                  width: '100%',
+                  mb: 4,
+                  p: 3,
+                  backgroundColor: '#e0f7fa',
+                  borderRadius: 2,
+                  textAlign: 'center',
+                  boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                  Welcome to Your Learning Dashboard!
+                </Typography>
+                <Typography variant="body1">
+                  Here you can manage your profile, view assignments, track your progress, and interact with our chatbot assistant. Click around to get started!
+                </Typography>
+                <Box mt={2}>
+                  <button
+                    style={{
+                      backgroundColor: '#00796b',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px 16px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      setShowWelcome(false);
+                      setTimeout(() => setShowTour(true), 500);
+                    }}
+                  >
+                    Start Guided Tour
+                  </button>
+                </Box>
+              </Box>
+            )}
+
             <Typography
               variant="h3"
               sx={{
@@ -237,15 +305,16 @@ export default function Dashboard() {
             >
               Dashboard Overview
             </Typography>
+
             {renderContent()}
           </>
         )}
         <Outlet />
-
       </Box>
-      {role === 'student' && user?.firstLogin && <StudentOnboardingTour role={role} />}
 
-
+      {role === 'student' && user?.firstLogin && showTour && (
+        <StudentOnboardingTour role={role} onFinish={handleTourFinish} />
+      )}
     </Box>
   );
 }
@@ -259,14 +328,12 @@ function StatCard({ title, value }) {
           minHeight: 140,
           borderRadius: 3,
           backgroundColor: '#fff',
-          boxShadow:
-            '0 4px 10px rgba(100, 100, 111, 0.2)',
+          boxShadow: '0 4px 10px rgba(100, 100, 111, 0.2)',
           transition: 'transform 0.25s ease, box-shadow 0.25s ease',
           cursor: 'default',
           '&:hover': {
             transform: 'translateY(-6px)',
-            boxShadow:
-              '0 8px 20px rgba(100, 100, 111, 0.3)',
+            boxShadow: '0 8px 20px rgba(100, 100, 111, 0.3)',
           },
           display: 'flex',
           flexDirection: 'column',

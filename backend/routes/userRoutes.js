@@ -242,18 +242,16 @@ router.put('/editUpdateUserById', async (req, res) => {
 });
 
 
-// PATCH /users/disableFirstLogin
-router.patch('/disableFirstLogin', async (req, res) => {
+router.put('/:id/firstLogin', async (req, res) => {
     try {
-      const userId = req.user._id;
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { firstLogin: false },
-        { new: true }
-      );
-      res.status(200).json({ success: true });
+      const { id } = req.params;
+      const { firstLogin } = req.body;
+  
+      const user = await User.findByIdAndUpdate(id, { firstLogin }, { new: true });
+      res.json({ success: true, user });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to update firstLogin flag' });
+      console.error(err);
+      res.status(500).json({ success: false, message: 'Failed to update firstLogin' });
     }
   });
   
